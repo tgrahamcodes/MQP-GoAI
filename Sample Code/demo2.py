@@ -24,9 +24,6 @@ oplayerColor = (255,255,255)
 xplayer_nextmoveColor = (50,50,50)
 oplayer_nextmoveColor = (200,200,200)
 
-# load image for stones
-o_img = pygame.image.load('o.png')
-
 #---------------------------------------------
 def draw_lines(win,n=8):
     '''

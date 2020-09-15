@@ -23,9 +23,6 @@ xplayer_nextmoveColor = (50,50,50)
 oplayer_nextmoveColor = (200,200,200)
 MAX_GAME_LENGTH = Board_SIZE*Board_SIZE*3
 
-# load image for stones
-o_img = pygame.image.load('o.png')
-
 #---------------------------------------------
 def draw_lines(win,n=Board_SIZE-1):
     '''
