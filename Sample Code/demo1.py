@@ -184,8 +184,8 @@ def run_a_game(p):
             # Human player's turn to choose a move
             # get mouse position
             (mouseX, mouseY) = pygame.mouse.get_pos()
-            print(mouseX)
-            print(mouseY)
+            # print(mouseX)
+            # print(mouseY)
             # convert to board grid (row,column)
             r, c = map_mouse_to_board(mouseX, mouseY)
             # if the move is valid 
@@ -196,6 +196,7 @@ def run_a_game(p):
 
                 # draw the board
                 draw_board(win,s.b)
+                print("X player chooses:",str(r),str(c))
 
                 # check if the game has ended already
                 e = g.check_game(s) 
@@ -214,6 +215,7 @@ def run_a_game(p):
             x=s.x
             # draw the board
             draw_board(win,s.b)
+            print("O player chooses:",str(r),str(c))
 
             # check if the game has ended already
             e = g.check_game(s) 
