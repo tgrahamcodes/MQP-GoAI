@@ -20,7 +20,6 @@ from problem1 import TicTacToe, RandomPlayer
     If you want to play with MCTS player, you could type the following in the terminal:
         python3 demo1.py mcts
 '''
-gameState = []
 screenSize = 400
 margin = 35
 gameSize = screenSize - (2 * margin)
@@ -215,9 +214,6 @@ def run_a_game(p):
             x=s.x
             # draw the board
             draw_board(win,s.b)
-
-            # save the game state to an array
-            gameState.append(s.b)
 
             # check if the game has ended already
             e = g.check_game(s) 
