@@ -87,7 +87,7 @@ class MCNode(Node):
 
 
     # ----------------------------------------------
-    def expand(self,g):
+    def expand(self,g,player=None):
         '''
         Expand the current tree node by adding one layer of children nodes by adding one child node for each valid next move.
         Then select one of the children nodes to return.
@@ -185,6 +185,9 @@ class MCNode(Node):
         for m,s in p:
             # for each next move m and game state s, create a child node
             c = MCNode(s,p=self, m=m)
+            # add child node to dictionary
+            if player is not None:
+                player.mem.fill_mem(s, c) 
             # append the child node the child list of the current node 
             self.c.append(c)
         #########################################
@@ -432,7 +435,7 @@ class MCNode(Node):
 
 
     #----------------------------------------------
-    def build_tree(self,g, n_iter=100):
+    def build_tree(self,g,n_iter=100,player=None):
         '''
         Given a node of the current game state, build a Monte-Carlo Search Tree by n iteration of (selection->expand->sample->backprop).
         Inputs: 
@@ -636,6 +639,8 @@ class MCNode(Node):
     
         Hint: you could use the functions implemented above to solve this problem using 5 lines of code.
         '''
+        if player is not None:
+            player.mem.fill_mem(self.s, self)
         # iterate n_iter times
         for _ in range(n_iter):
             #########################################
@@ -646,7 +651,7 @@ class MCNode(Node):
             #   Step 2: expansion:expand node (L) with one level of children nodes and select one of L's children nodes (C) as the leaf node 
             e = g.check_game(c.s)
             if e is None:
-                c=c.expand(g)
+                c=c.expand(g,player)
             #   Step 3: simulation: sample a game result from the selected leaf node (C) 
                 e =  c.sample(g)
             #   Step 4: back propagation: backprop the result of the simulation 
@@ -673,14 +678,7 @@ class MCTSPlayer(Player):
 
     def __init__(self,n_iter=100):
         self.n_iter = n_iter
-        self.tree = {}
-
-    def fill_dict(self, s, n):
-        if s not in self.tree:
-            self.tree[s] = n
-
-        for c in n.c:
-            self.fill_dict(c.s, c)
+        self.mem = MemoryTree()
 
     # ----------------------------------------------
     # Let's implement step (2): choose optimal next move
@@ -759,24 +757,22 @@ class MCTSPlayer(Player):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
-        if not self.tree:
+        if not self.mem.tree:
             # create a tree node (n) with the current game state 
             n = MCNode(s)
             # build a search tree with the tree node (n) as the root and n_iter as the number of simulations
-            n.build_tree(g,self.n_iter)
-            self.fill_dict(s, n)
+            n.build_tree(g,self.n_iter,self)
 
         else:
-            n = self.tree.get(s, None)
+            n = self.mem.tree.get(s, None)
 
             # rebuild tree if new game and different move
             if not n:
-                self.tree = {}
+                self.tree = MemoryTree()
                 n = MCNode(s)
 
             # simulate and update existing nodes
-            n.build_tree(g,self.n_iter)
-            self.fill_dict(s, n)
+            n.build_tree(g,self.n_iter,self)
 
         # choose the best next move: the children node of the root node with the largest N
         r,c=self.choose_optimal_move(n)
@@ -784,6 +780,18 @@ class MCTSPlayer(Player):
         return r,c
 
     ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test2.py:test_MCTS_choose_a_move' in the terminal.  '''
+
+
+
+#--------------------------------------------
+class MemoryTree():
+
+    def __init__(self):
+        self.tree = {}
+
+    def fill_mem(self, s, n):
+        if s not in self.tree:
+            self.tree[s] = n
 
 
 
