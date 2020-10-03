@@ -797,23 +797,27 @@ class MemoryTree():
 
 #--------------------------------------------
 
-''' TEST Problem 2: 
-        Now you can test the correctness of all the above functions by typing `nosetests -v test2.py' in the terminal.  
+''' TEST MCTS: 
+        Now you can test the correctness of all the above functions by typing `nosetests -v testmcts.py' in the terminal.  
 
         If your code passed all the tests, you will see the following message in the terminal:
-            ----------- Problem 2 (50 points in total)--------------------- ... ok
-            (5 points) sample ... ok
-            (5 points) expand ... ok
-            (5 points) backprop ... ok
-            (5 points) compute_UCB ... ok
-            (5 points) select_a_child ... ok
-            (5 points) selection ... ok
-            (5 points) build_tree ... ok
-            (5 points) choose_optimal_move() ... ok
-            (10 points) MCTS choose_a_move ... ok
-            ----------------------------------------------------------------------
-            Ran 10 tests in 18.117s     
-            OK
+        ----------- Monte Carlo (60 points in total)--------------------- ... ok
+        (5 points) sample ... ok
+        (5 points) expand ... ok
+        (5 points) backprop ... ok
+        (5 points) compute_UCB ... ok
+        (5 points) select_a_child ... ok
+        (5 points) selection ... ok
+        (5 points) build_tree ... ok
+        (5 points) choose_optimal_move ... ok
+        (10 points) MCTS choose_a_move ... ok
+        (5 points) fill_mem ... ok
+        (5 points) MCTS memory ... ok
+
+        ----------------------------------------------------------------------
+        Ran 12 tests in 24.278s
+
+        OK
 '''
 
 

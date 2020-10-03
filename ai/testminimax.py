@@ -12,7 +12,7 @@ import sys
 
 #-------------------------------------------------------------------------
 def test_python_version():
-    ''' ----------- Random and Minimax (55 points in total)--------------'''
+    ''' ----------- Random and Minimax (60 points in total)--------------'''
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
 
 
@@ -1571,6 +1571,38 @@ def test_minmax_choose_a_move():
 
 
 #-------------------------------------------------------------------------
+def test_fill_mem():
+    '''(5 points) fill_mem'''
+    #---------------------
+    # Game: TicTacToe
+    g = TicTacToe()  # game 
+    m = MemoryTree()
+    assert m.tree == {}
+
+    #-------------------------
+    b=np.array([[ 1,-1, 1],
+                [ 0, 0,-1],
+                [ 0, 1,-1]])
+    s = GameState(b,x=1) # it's X player's turn
+    n = MMNode(s)
+    n.build_tree(g)
+    n.compute_v(g)
+    m.fill_mem(s, n)
+    mem_n = m.tree.get(s, n)
+    assert len(m.tree) > 0
+    assert n == mem_n
+    assert len(n.c) == 3
+
+    #-------------------------
+    p = MiniMaxPlayer()
+    p.choose_a_move(g,s)
+    n = p.mem.tree.get(s, None)
+    assert isinstance(p.mem, MemoryTree)
+    assert len(p.mem.tree) > 0
+    assert n != None
+
+
+#-------------------------------------------------------------------------
 def test_minimax_memory():
     '''(5 points) minimax memory'''
     #---------------------
@@ -1586,17 +1618,17 @@ def test_minimax_memory():
     n = MMNode(s)
     n.build_tree(g)
     n.compute_v(g)
-    p.fill_dict(s, n) 
-    dict_n = p.tree.get(s, None)
-    assert p.tree != None
-    assert n == dict_n
+    p.mem.fill_mem(s, n) 
+    mem_n = p.mem.tree.get(s, None)
+    assert p.mem.tree != None
+    assert n == mem_n
 
     #-------------------------
     b=np.array([[ 1,-1, 1],
                 [ 0, 1,-1],
                 [ 0, 1,-1]])
     s = GameState(b,x=-1) # it's O player's turn
-    n = p.tree.get(s, None)
+    n = p.mem.tree.get(s, None)
     assert n != None
 
     #-------------------------
@@ -1604,10 +1636,10 @@ def test_minimax_memory():
                 [ 0, 0, 0],
                 [ 0, 1,-1]])
     s = GameState(b,x=-1) # it's O player's turn
-    n = p.tree.get(s, None)
+    n = p.mem.tree.get(s, None)
     assert n == None
     _ = p.choose_a_move(g,s)
-    n = p.tree.get(s, None)
+    n = p.mem.tree.get(s, None)
     assert n != None
 
     #-------------------------
@@ -1622,7 +1654,7 @@ def test_minimax_memory():
                 [ 0, 1,-1],
                 [ 0, 0, 1]])
     s = GameState(b,x=-1) # it's O player's turn
-    n = p.tree.get(s, None)
+    n = p.mem.tree.get(s, None)
     assert n != None
     assert n.c == []
 
@@ -1631,7 +1663,7 @@ def test_minimax_memory():
                 [ 0, 0, 0],
                 [ 0, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    n = p.tree.get(s, None)
+    n = p.mem.tree.get(s, None)
     assert n != None
 
 
@@ -1654,9 +1686,9 @@ def test_minimax_memory():
     n = MMNode(s)
     n.build_tree(g)
     n.compute_v(g)
-    p.fill_dict(s,n)
-    dict_n = p.tree.get(s, None)
-    assert p.tree != None
-    assert n == dict_n
+    p.mem.fill_mem(s,n)
+    mem_n = p.mem.tree.get(s, None)
+    assert p.mem.tree != None
+    assert n == mem_n
     assert n.c != []
 

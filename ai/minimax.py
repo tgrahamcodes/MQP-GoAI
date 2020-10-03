@@ -865,14 +865,7 @@ class MiniMaxPlayer(Player):
         Minimax player, who choose optimal moves by searching the tree with min-max.  
     '''
     def __init__(self):
-        self.tree = {}
-
-    def fill_dict(self, s, n):
-        if s not in self.tree:
-            self.tree[s] = n
-
-        for c in n.c:
-            self.fill_dict(c.s, c)
+        self.mem = MemoryTree()
 
     #----------------------------------------------
     # Let's first implement step (3): choose optimal next move
@@ -961,25 +954,25 @@ class MiniMaxPlayer(Player):
 
         # (1) build a search tree with the current game state as the root node
 
-        if not self.tree:
+        if not self.mem.tree:
             n = MMNode(s)
             n.build_tree(g)
 
             # (2) compute values of all tree nodes
             n.compute_v(g)
 
-            self.fill_dict(s, n)
+            self.mem.fill_mem(s, n)
 
         else:
-            n = self.tree.get(s, None)
+            n = self.mem.tree.get(s, None)
 
             # rebuild tree if new game and different move
             if not n:
-                self.tree = {}
+                self.tree = MemoryTree()
                 n = MMNode(s)
                 n.build_tree(g)
                 n.compute_v(g)
-                self.fill_dict(s, n)
+                self.mem.fill_mem(s, n)
         
         # (3) choose the optimal next move
         r,c = self.choose_optimal_move(n)
@@ -988,6 +981,19 @@ class MiniMaxPlayer(Player):
 
     ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test1.py:test_minmax_choose_a_move' in the terminal.  '''
 
+
+#--------------------------------------------
+class MemoryTree():
+
+    def __init__(self):
+        self.tree = {}
+
+    def fill_mem(self, s, n):
+        if s not in self.tree:
+            self.tree[s] = n
+
+        for c in n.c:
+            self.fill_mem(c.s, c)
 
 
 #--------------------------------------------
