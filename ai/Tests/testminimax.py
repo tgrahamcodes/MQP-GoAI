@@ -1,8 +1,11 @@
-from minimax import *
-from game import GameState, Othello, GO_state, GO
 import copy
 import numpy as np
 import sys
+import os
+sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
+from minimax import *
+sys.path.append(os.path.abspath('..\\GoAI\\ai'))
+from game import GameState, Othello, GO_state, GO
 
 '''
     Unit test 1:

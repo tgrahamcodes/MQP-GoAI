@@ -1,6 +1,9 @@
 #-------------------------------------------------------------------------
 import numpy as np
+import sys
+import os
 from minimax import RandomPlayer, Node
+sys.path.append(os.path.abspath('..\\GoAI\\ai'))
 from game import BoardGame,Player 
 #-------------------------------------------------------------------------
 '''

@@ -1,8 +1,11 @@
-from mcts import *
-from minimax import MiniMaxPlayer, TicTacToe, GameState
-from game import Othello 
 import numpy as np
 import sys
+import os
+sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
+from mcts import *
+from minimax import MiniMaxPlayer, TicTacToe, GameState
+sys.path.append(os.path.abspath('..\\GoAI\\ai'))
+from game import Othello 
 
 '''
     Unit test 2:

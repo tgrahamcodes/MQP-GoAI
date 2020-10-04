@@ -1,7 +1,11 @@
 import pygame
 import numpy as np
 import sys
+import os
+sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
 from minimax import RandomPlayer 
+from mcts import MCTSPlayer
+sys.path.append(os.path.abspath('..\\GoAI\\ai'))
 from game import Othello 
 
 '''
@@ -141,7 +145,7 @@ def init_screen():
 
 
     # set icon
-    icon = pygame.image.load('o.png')
+    icon = pygame.image.load('..\\GOAI\\ai\\o.png')
     pygame.display.set_icon(icon)
 
     # Title
@@ -243,7 +247,6 @@ if __name__ == "__main__":
     if len(sys.argv)>1:
         arg=sys.argv[1]
         # play with MCTS player
-        from mcts import MCTSPlayer
         p =MCTSPlayer()
         print('Now you are playing with Monte-Carlo Tree Search Player!')
     else:
