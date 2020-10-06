@@ -1,10 +1,11 @@
 
 #-------------------------------------------------------------------------
 import numpy as np
+import pickle
 import sys
 import os
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import GameState,BoardGame, Player
+from game import GameState,BoardGame, Player, MemoryTree
 #-------------------------------------------------------------------------
 '''
     Problem 1: TicTacToe and MiniMax AI player 
@@ -868,7 +869,7 @@ class MiniMaxPlayer(Player):
         Minimax player, who choose optimal moves by searching the tree with min-max.  
     '''
     def __init__(self):
-        self.mem = MemoryTree()
+        self.mem = MMMemory()
 
     #----------------------------------------------
     # Let's first implement step (3): choose optimal next move
@@ -965,13 +966,12 @@ class MiniMaxPlayer(Player):
             n.compute_v(g)
 
             self.mem.fill_mem(s, n)
+            self.mem.export_mem()
 
         else:
-            n = self.mem.tree.get(s, None)
+            n = self.mem.get_node(s)
 
-            # rebuild tree if new game and different move
             if not n:
-                self.tree = MemoryTree()
                 n = MMNode(s)
                 n.build_tree(g)
                 n.compute_v(g)
@@ -986,10 +986,13 @@ class MiniMaxPlayer(Player):
 
 
 #--------------------------------------------
-class MemoryTree():
+class MMMemory(MemoryTree):
 
-    def __init__(self):
-        self.tree = {}
+    def __init__(self, file="..\\GOAI\\ai\\Players\\Memory\\MMTree.p"):
+        if os.path.isfile(file):
+            self.tree = self.load_mem()
+        else:
+            self.tree = {}
 
     def fill_mem(self, s, n):
         if s not in self.tree:
@@ -997,6 +1000,12 @@ class MemoryTree():
 
         for c in n.c:
             self.fill_mem(c.s, c)
+        
+    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMTree.p"):
+        pickle.dump(self.tree, open(file, "wb"))
+
+    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMTree.p"):
+        return pickle.load(open(file, "rb"))
 
 
 #--------------------------------------------

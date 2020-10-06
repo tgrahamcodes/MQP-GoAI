@@ -15,7 +15,7 @@ from game import GameState, Othello, GO_state, GO
 
 #-------------------------------------------------------------------------
 def test_python_version():
-    ''' ----------- Random and Minimax (60 points in total)--------------'''
+    ''' ----------- Random and Minimax (65 points in total)--------------'''
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
 
 
@@ -1428,7 +1428,7 @@ def test_minmax_choose_a_move():
 
 
     # three possible moves, one leads to win
-    p = MiniMaxPlayer()
+    # p = MiniMaxPlayer()
     b=np.array([[ 1,-1, 1],
                 [ 0, 0,-1],
                 [ 0, 1,-1]])
@@ -1438,7 +1438,7 @@ def test_minmax_choose_a_move():
     assert c==0  
 
     #-------------------------
-    p = MiniMaxPlayer()
+    # p = MiniMaxPlayer()
     b=np.array([[ 1,-1, 1],
                 [ 0, 0, 0],
                 [ 0, 0, 0]])
@@ -1450,7 +1450,7 @@ def test_minmax_choose_a_move():
 
     #-------------------------
     # play against random player in the game
-    p1 = MiniMaxPlayer()
+    # p1 = MiniMaxPlayer()
     p2 = RandomPlayer()
 
     # X Player: MinMax
@@ -1460,7 +1460,7 @@ def test_minmax_choose_a_move():
                 [ 0, 0,-1]])
     for i in range(10):
         s = GameState(b,x=1) # it's X player's turn
-        e = g.run_a_game(p1,p2,s=s)
+        e = g.run_a_game(p,p2,s=s)
         assert e==1
 
 
@@ -1474,42 +1474,42 @@ def test_minmax_choose_a_move():
                 [ 0, 1,-1]])
     for i in range(10):
         s = GameState(b,x=1) # it's X player's turn
-        e = g.run_a_game(p1,p1,s=s)
+        e = g.run_a_game(p,p,s=s)
         assert e==1
 
     b=np.array([[ 0, 0, 1],
                 [ 0,-1, 0],
                 [ 1,-1, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    e = g.run_a_game(p1,p1,s=s)
+    e = g.run_a_game(p,p,s=s)
     assert e==0
 
     b=np.array([[ 0, 0, 0],
                 [ 0,-1, 0],
                 [ 1, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    e = g.run_a_game(p1,p1,s=s)
+    e = g.run_a_game(p,p,s=s)
     assert e==0
 
     b=np.array([[ 0, 0, 0],
                 [ 0, 0, 0],
                 [ 1,-1, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    e = g.run_a_game(p1,p1,s=s)
+    e = g.run_a_game(p,p,s=s)
     assert e==1
 
     b=np.array([[ 0, 0, 0],
                 [ 0, 1, 0],
                 [ 0,-1, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    e = g.run_a_game(p1,p1,s)
+    e = g.run_a_game(p,p,s)
     assert e==1
 
     b=np.array([[ 0, 0, 0],
                 [ 0, 1, 0],
                 [-1, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    e = g.run_a_game(p1,p1,s)
+    e = g.run_a_game(p,p,s)
     assert e==0
 
     #******************************************************
@@ -1546,7 +1546,7 @@ def test_minmax_choose_a_move():
                 [ 0, 0, 0, 0, 0, 0, 0, 0]])
     for i in range(10):
         s = GameState(b,x=1) # it's X player's turn
-        e = g.run_a_game(p1,p2,s=s)
+        e = g.run_a_game(p,p2,s=s)
         assert e==1
 
     w=0
@@ -1579,8 +1579,8 @@ def test_fill_mem():
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
-    m = MemoryTree()
-    assert m.tree == {}
+    m = MMMemory()
+    m.tree = {}
 
     #-------------------------
     b=np.array([[ 1,-1, 1],
@@ -1598,11 +1598,36 @@ def test_fill_mem():
 
     #-------------------------
     p = MiniMaxPlayer()
+    p.mem.tree = {}
     p.choose_a_move(g,s)
     n = p.mem.tree.get(s, None)
-    assert isinstance(p.mem, MemoryTree)
+    assert isinstance(p.mem, MMMemory)
     assert len(p.mem.tree) > 0
     assert n != None
+
+
+#-------------------------------------------------------------------------
+def test_get_node():
+    '''(5 points) get_node'''
+    #---------------------
+    # Game: TicTacToe
+    g = TicTacToe()  # game 
+    m = MMMemory()
+    m.tree = {}
+
+    #-------------------------
+    b=np.array([[ 1,-1, 1],
+                [ 0, 0,-1],
+                [ 0, 1,-1]])
+    s = GameState(b,x=1) # it's X player's turn
+    n = MMNode(s)
+    mem_n = m.get_node(s)
+    assert mem_n == None
+    n.build_tree(g)
+    n.compute_v(g)
+    m.fill_mem(s, n)
+    mem_n = m.get_node(s)
+    assert n == mem_n
 
 
 #-------------------------------------------------------------------------
@@ -1612,6 +1637,7 @@ def test_minimax_memory():
     # Game: TicTacToe
     g = TicTacToe()  # game 
     p = MiniMaxPlayer()
+    p.mem.tree = {}
 
     #-------------------------
     b=np.array([[ 1,-1, 1],
@@ -1622,7 +1648,7 @@ def test_minimax_memory():
     n.build_tree(g)
     n.compute_v(g)
     p.mem.fill_mem(s, n) 
-    mem_n = p.mem.tree.get(s, None)
+    mem_n = p.mem.get_node(s)
     assert p.mem.tree != None
     assert n == mem_n
 
@@ -1631,7 +1657,7 @@ def test_minimax_memory():
                 [ 0, 1,-1],
                 [ 0, 1,-1]])
     s = GameState(b,x=-1) # it's O player's turn
-    n = p.mem.tree.get(s, None)
+    n = p.mem.get_node(s)
     assert n != None
 
     #-------------------------
@@ -1639,10 +1665,10 @@ def test_minimax_memory():
                 [ 0, 0, 0],
                 [ 0, 1,-1]])
     s = GameState(b,x=-1) # it's O player's turn
-    n = p.mem.tree.get(s, None)
+    n = p.mem.get_node(s)
     assert n == None
     _ = p.choose_a_move(g,s)
-    n = p.mem.tree.get(s, None)
+    n = p.mem.get_node(s)
     assert n != None
 
     #-------------------------
@@ -1657,7 +1683,7 @@ def test_minimax_memory():
                 [ 0, 1,-1],
                 [ 0, 0, 1]])
     s = GameState(b,x=-1) # it's O player's turn
-    n = p.mem.tree.get(s, None)
+    n = p.mem.get_node(s)
     assert n != None
     assert n.c == []
 
@@ -1666,7 +1692,7 @@ def test_minimax_memory():
                 [ 0, 0, 0],
                 [ 0, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
-    n = p.mem.tree.get(s, None)
+    n = p.mem.get_node(s)
     assert n != None
 
 
@@ -1690,7 +1716,7 @@ def test_minimax_memory():
     n.build_tree(g)
     n.compute_v(g)
     p.mem.fill_mem(s,n)
-    mem_n = p.mem.tree.get(s, None)
+    mem_n = p.mem.get_node(s)
     assert p.mem.tree != None
     assert n == mem_n
     assert n.c != []

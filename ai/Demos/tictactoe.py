@@ -157,6 +157,9 @@ def run_a_game(p):
     s = g.initial_game_state()
     x = 1 # current turn (x player's turn)
 
+    # create game tree if it does not exist, otherwise load it
+    _ = p.choose_a_move(g, s)
+
     canPlay = True
     pygame.display.update()
 
@@ -165,11 +168,17 @@ def run_a_game(p):
         event = pygame.event.wait()
         # close the window 
         if event.type == pygame.QUIT:
+            # update MC tree before exit
+            if isinstance(p, MCTSPlayer):
+                p.mem.export_mem()
             pygame.quit()
             sys.exit()
         
         # Press Key 
         if event.type == pygame.KEYDOWN:
+            # update MC tree before exit
+            if isinstance(p, MCTSPlayer):
+                p.mem.export_mem()
             # press F button (restart game)
             if event.key == pygame.K_f:
                 s = g.initial_game_state()

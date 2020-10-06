@@ -1,10 +1,11 @@
 #-------------------------------------------------------------------------
 import numpy as np
+import pickle
 import sys
 import os
 from minimax import RandomPlayer, Node
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import BoardGame,Player 
+from game import BoardGame,Player,MemoryTree
 #-------------------------------------------------------------------------
 '''
     Problem 2: Monte Carlo Tree Search (MCTS) 
@@ -681,7 +682,7 @@ class MCTSPlayer(Player):
 
     def __init__(self,n_iter=100):
         self.n_iter = n_iter
-        self.mem = MemoryTree()
+        self.mem = MCMemory()
 
     # ----------------------------------------------
     # Let's implement step (2): choose optimal next move
@@ -765,13 +766,13 @@ class MCTSPlayer(Player):
             n = MCNode(s)
             # build a search tree with the tree node (n) as the root and n_iter as the number of simulations
             n.build_tree(g,self.n_iter,self)
+            n = self.mem.get_node(s)
 
         else:
-            n = self.mem.tree.get(s, None)
+            n = self.mem.get_node(s)
 
-            # rebuild tree if new game and different move
+            # if node is not yet in memory
             if not n:
-                self.tree = MemoryTree()
                 n = MCNode(s)
 
             # simulate and update existing nodes
@@ -787,14 +788,23 @@ class MCTSPlayer(Player):
 
 
 #--------------------------------------------
-class MemoryTree():
+class MCMemory(MemoryTree):
 
-    def __init__(self):
-        self.tree = {}
+    def __init__(self, file="..\\GOAI\\ai\\Players\\Memory\\MCTree.p"):
+        if os.path.isfile(file):
+            self.tree = self.load_mem()
+        else:
+            self.tree = {}
 
     def fill_mem(self, s, n):
         if s not in self.tree:
             self.tree[s] = n
+    
+    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCTree.p"):
+        pickle.dump(self.tree, open(file, "wb"))
+
+    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCTree.p"):
+        return pickle.load(open(file, "rb"))
 
 
 

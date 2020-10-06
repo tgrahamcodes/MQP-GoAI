@@ -916,3 +916,22 @@ class GO(BoardGame):
         s.x*=-1
         s.t+=1 # game step +1
 
+
+#-------------------------------------------------------
+class MemoryTree(ABC):
+
+    def get_node(self, s):
+        return self.tree.get(s, None)
+
+    @abstractmethod
+    def fill_mem(self, s, n):
+        pass
+
+    @abstractmethod
+    def export_mem(self, file):
+        pass
+    
+    @abstractmethod
+    def load_mem(self, file):
+        pass
+
