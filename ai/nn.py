@@ -1,13 +1,13 @@
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 import torch
 import pickle
 import os
 from Players.minimax import MiniMaxPlayer
-from Players.mcts import MCTSPlayer 
+from Players.mcts import MCTSPlayer
 from Players.memory import MemoryDict
 from torch.utils.data import Dataset, DataLoader
 from pathlib import Path
-#-------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 
 N, D_in, H, D_out = 64, 10, 5, 1
 
@@ -43,4 +43,3 @@ for t in range(500):
     with torch.no_grad():
         for param in model.parameters():
             param -= learning_rate + param.grad
-
