@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 import sys
 import os
-sys.pcath.append(os.path.abspath('..\\GoAI\\ai\\Players'))
+sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
 from minimax import RandomPlayer, MiniMaxPlayer
 from mcts import MCTSPlayer
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
