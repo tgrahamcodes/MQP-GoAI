@@ -5,7 +5,7 @@ import os
 sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
 from minimax import *
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import GameState, Othello, GO_state, GO
+from game import GameState, TicTacToe, Othello, GO_state, GO
 
 '''
     Unit test 1:
@@ -15,13 +15,13 @@ from game import GameState, Othello, GO_state, GO
 
 #-------------------------------------------------------------------------
 def test_python_version():
-    ''' ----------- Random and Minimax (65 points in total)--------------'''
+    ''' ----------- Random and Minimax--------------'''
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
 
 
 #-------------------------------------------------------------------------
 def test_get_valid_moves():
-    '''(5 points) get_valid_moves()'''
+    '''get_valid_moves()'''
     g = TicTacToe()  # game 
 
     b=np.array([[  1 , 0 ,-1 ],
@@ -52,7 +52,7 @@ def test_get_valid_moves():
 
 #-------------------------------------------------------------------------
 def test_check_game():
-    '''(5 points) check_game()'''
+    '''check_game()'''
     g = TicTacToe()  # game 
     b=np.array([[ 1, 0, 1],
                 [ 0, 0,-1],
@@ -164,7 +164,7 @@ def test_check_game():
 
 #-------------------------------------------------------------------------
 def test_choose_a_move():
-    '''(5 points) random choose_a_move()'''
+    '''random choose_a_move()'''
 
     #---------------------
     # Game: TicTacToe
@@ -322,7 +322,7 @@ def test_choose_a_move():
 
 #-------------------------------------------------------------------------
 def test_expand():
-    '''(5 points) expand'''
+    '''expand'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -614,7 +614,7 @@ def test_expand():
 
 #-------------------------------------------------------------------------
 def test_build_tree():
-    '''(5 points) build_tree'''
+    '''build_tree'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -1081,7 +1081,7 @@ def test_build_tree():
 
 #-------------------------------------------------------------------------
 def test_compute_v():
-    '''(10 points) compute_v()'''
+    '''compute_v()'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -1326,7 +1326,7 @@ def test_compute_v():
 
 #-------------------------------------------------------------------------
 def test_choose_optimal_move():
-    '''(5 points) choose_optimal_move()'''
+    '''choose_optimal_move()'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -1408,7 +1408,7 @@ def test_choose_optimal_move():
 
 #-------------------------------------------------------------------------
 def test_minmax_choose_a_move():
-    '''(10 points) minmax choose_a_move()'''
+    '''minmax choose_a_move()'''
 
     #---------------------
     # Game: TicTacToe
@@ -1575,12 +1575,13 @@ def test_minmax_choose_a_move():
 
 #-------------------------------------------------------------------------
 def test_fill_mem():
-    '''(5 points) fill_mem'''
+    '''fill_mem'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     m = MMMemory()
-    m.tree = {}
+    # fill dictionary with dummy value so it does not load from memory to test recursive part
+    m.dictionary = {"temp" : "temp"}
 
     #-------------------------
     b=np.array([[ 1,-1, 1],
@@ -1590,30 +1591,39 @@ def test_fill_mem():
     n = MMNode(s)
     n.build_tree(g)
     n.compute_v(g)
-    m.fill_mem(s, n)
-    mem_n = m.tree.get(s, n)
-    assert len(m.tree) > 0
+    m.fill_mem(n)
+    mem_n = m.dictionary.get(s, None)
+    assert len(m.dictionary) > 0
     assert n == mem_n
     assert len(n.c) == 3
 
     #-------------------------
     p = MiniMaxPlayer()
-    p.mem.tree = {}
     p.choose_a_move(g,s)
-    n = p.mem.tree.get(s, None)
+    n = p.mem.dictionary.get(s, None)
     assert isinstance(p.mem, MMMemory)
-    assert len(p.mem.tree) > 0
+    assert len(p.mem.dictionary) > 0
     assert n != None
+
+    #-------------------------
+    p = MiniMaxPlayer()
+    p.choose_a_move(g,s)
+    n = MMNode(s)
+    n.build_tree(g)
+    mem_n = p.mem.dictionary.get(s, None)
+    assert isinstance(p.mem, MMMemory)
+    assert len(p.mem.dictionary) > 0
+    assert [c.m for c in n.c] == [c.m for c in n.c]
 
 
 #-------------------------------------------------------------------------
 def test_get_node():
-    '''(5 points) get_node'''
+    '''get_node'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     m = MMMemory()
-    m.tree = {}
+    m.dictionary = {"temp" : "temp"}
 
     #-------------------------
     b=np.array([[ 1,-1, 1],
@@ -1625,19 +1635,20 @@ def test_get_node():
     assert mem_n == None
     n.build_tree(g)
     n.compute_v(g)
-    m.fill_mem(s, n)
+    m.fill_mem(n)
     mem_n = m.get_node(s)
+    assert m.dictionary != {}
     assert n == mem_n
 
 
 #-------------------------------------------------------------------------
 def test_minimax_memory():
-    '''(5 points) minimax memory'''
+    '''minimax memory'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     p = MiniMaxPlayer()
-    p.mem.tree = {}
+    p.mem.dictionary = {"temp" : "temp"}
 
     #-------------------------
     b=np.array([[ 1,-1, 1],
@@ -1647,9 +1658,9 @@ def test_minimax_memory():
     n = MMNode(s)
     n.build_tree(g)
     n.compute_v(g)
-    p.mem.fill_mem(s, n) 
+    p.mem.fill_mem(n) 
     mem_n = p.mem.get_node(s)
-    assert p.mem.tree != None
+    assert p.mem.dictionary != {}
     assert n == mem_n
 
     #-------------------------
@@ -1715,9 +1726,9 @@ def test_minimax_memory():
     n = MMNode(s)
     n.build_tree(g)
     n.compute_v(g)
-    p.mem.fill_mem(s,n)
+    p.mem.fill_mem(n)
     mem_n = p.mem.get_node(s)
-    assert p.mem.tree != None
+    assert p.mem.dictionary != {}
     assert n == mem_n
     assert n.c != []
 

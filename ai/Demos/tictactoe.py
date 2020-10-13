@@ -3,8 +3,10 @@ import numpy as np
 import sys
 import os
 sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
-from minimax import TicTacToe, RandomPlayer, MiniMaxPlayer
+from minimax import RandomPlayer, MiniMaxPlayer
 from mcts import MCTSPlayer
+sys.path.append(os.path.abspath('..\\GoAI\\ai'))
+from game import TicTacToe 
 
 '''
     This is a demo for TicTacToe game. You could play with the AI that you have built in minimax and mcts.
@@ -168,17 +170,11 @@ def run_a_game(p):
         event = pygame.event.wait()
         # close the window 
         if event.type == pygame.QUIT:
-            # update MC tree before exit
-            if isinstance(p, MCTSPlayer):
-                p.mem.export_mem()
             pygame.quit()
             sys.exit()
         
         # Press Key 
         if event.type == pygame.KEYDOWN:
-            # update MC tree before exit
-            if isinstance(p, MCTSPlayer):
-                p.mem.export_mem()
             # press F button (restart game)
             if event.key == pygame.K_f:
                 s = g.initial_game_state()

@@ -4,8 +4,9 @@ import pickle
 import sys
 import os
 from minimax import RandomPlayer, Node
+from memory import MemoryDict
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import BoardGame,Player,MemoryTree
+from game import BoardGame, Player
 #-------------------------------------------------------------------------
 '''
     Problem 2: Monte Carlo Tree Search (MCTS) 
@@ -191,7 +192,7 @@ class MCNode(Node):
             c = MCNode(s,p=self, m=m)
             # add child node to dictionary
             if player is not None:
-                player.mem.fill_mem(s, c) 
+                player.mem.fill_mem(c) 
             # append the child node the child list of the current node 
             self.c.append(c)
         #########################################
@@ -644,7 +645,7 @@ class MCNode(Node):
         Hint: you could use the functions implemented above to solve this problem using 5 lines of code.
         '''
         if player is not None:
-            player.mem.fill_mem(self.s, self)
+            player.mem.fill_mem(self)
         # iterate n_iter times
         for _ in range(n_iter):
             #########################################
@@ -761,7 +762,7 @@ class MCTSPlayer(Player):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
-        if not self.mem.tree:
+        if not self.mem.dictionary:
             # create a tree node (n) with the current game state 
             n = MCNode(s)
             # build a search tree with the tree node (n) as the root and n_iter as the number of simulations
@@ -788,111 +789,19 @@ class MCTSPlayer(Player):
 
 
 #--------------------------------------------
-class MCMemory(MemoryTree):
+class MCMemory(MemoryDict):
 
-    def __init__(self, file="..\\GOAI\\ai\\Players\\Memory\\MCTree.p"):
+    def __init__(self, file="..\\GOAI\\ai\\Players\\Memory\\MCDict.p"):
+        self.dictionary = {}
         if os.path.isfile(file):
-            self.tree = self.load_mem()
-        else:
-            self.tree = {}
+            self.dictionary = self.load_mem()
 
-    def fill_mem(self, s, n):
-        if s not in self.tree:
-            self.tree[s] = n
+    def fill_mem(self, n):
+        self.dictionary[n.s] = n
     
-    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCTree.p"):
-        pickle.dump(self.tree, open(file, "wb"))
+    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCDict.p"):
+        pickle.dump(self.dictionary, open(file, "wb"))
 
-    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCTree.p"):
+    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCDict.p"):
         return pickle.load(open(file, "rb"))
-
-
-
-#--------------------------------------------
-
-''' TEST MCTS: 
-        Now you can test the correctness of all the above functions by typing `nosetests -v testmcts.py' in the terminal.  
-
-        If your code passed all the tests, you will see the following message in the terminal:
-        ----------- Monte Carlo (60 points in total)--------------------- ... ok
-        (5 points) sample ... ok
-        (5 points) expand ... ok
-        (5 points) backprop ... ok
-        (5 points) compute_UCB ... ok
-        (5 points) select_a_child ... ok
-        (5 points) selection ... ok
-        (5 points) build_tree ... ok
-        (5 points) choose_optimal_move ... ok
-        (10 points) MCTS choose_a_move ... ok
-        (5 points) fill_mem ... ok
-        (5 points) MCTS memory ... ok
-
-        ----------------------------------------------------------------------
-        Ran 12 tests in 24.278s
-
-        OK
-'''
-
-
-
-
-
-
-
-
-#-----------------------------------------------
-''' 
-    Great job!
-    DEMO 1: If your code has passed all the above tests, now you can play TicTacToe game with the AI (Monte-Carlo Tree Search) 
-    by typing `python3 demo1.py mcts' in the terminal.  
-'''
-#-----------------------------------------------
-''' 
-    DEMO 2: You can also play Othello game with the AI (Monte-Carlo Tree Search) 
-    by typing `python3 demo2.py mcts' in the terminal.  
-'''
-#-----------------------------------------------
-
-
-
-
-
-
-
-#--------------------------------------------
-
-''' FINAL TEST of your submission: 
-        Now you can test the correctness of all the problems in this homework by typing `nosetests -v' in the terminal.  
-
-        If your code passed all the tests, you will see the following message in the terminal:
-            ----------- Problem 1 (50 points in total)--------------------- ... ok
-            (5 points) get_valid_moves() ... ok
-            (5 points) check_game() ... ok
-            (5 points) apply_a_move() ... ok
-            (5 points) random choose_a_move() ... ok
-            (5 points) expand ... ok
-            (5 points) build_tree ... ok
-            (5 points) compute_v() ... ok
-            (5 points) choose_optimal_move() ... ok
-            (10 points) minmax choose_a_move() ... ok
-
-            ----------- Problem 2 (50 points in total)--------------------- ... ok
-            (5 points) sample ... ok
-            (5 points) expand ... ok
-            (5 points) backprop ... ok
-            (5 points) compute_UCB ... ok
-            (5 points) select_a_child ... ok
-            (5 points) selection ... ok
-            (5 points) build_tree ... ok
-            (5 points) choose_optimal_move() ... ok
-            (10 points) MCTS choose_a_move ... ok
-
-            ----------------------------------------------------------------------
-            Ran 21 tests in 22.203s
-
-            OK
-'''
-#--------------------------------------------
-
-
 

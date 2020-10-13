@@ -2,6 +2,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
 import copy
+import sys
+import os
 #-------------------------------------------------------------------------
 
 
@@ -216,8 +218,179 @@ class BoardGame(ABC):
             else:
                 r,c = o_player.choose_a_move(self,s) # "O" player choose a move
             assert self.check_valid_move(s,r,c) # the move must be valid
-            self.apply_a_move(s,r,c) # apply the move and update game state 
+            self.apply_a_move(s,r,c) # apply the move and update game state
+
+        sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
+        from mcts import MCTSPlayer
+        if isinstance(x_player, MCTSPlayer):
+            x_player.mem.export_mem()
+        if isinstance(o_player, MCTSPlayer):
+            o_player.mem.export_mem()
+        
         return e
+
+
+#-------------------------------------------------------
+class TicTacToe(BoardGame):
+    '''
+        TicTacToe game environment: the goal is to provide a platform for two AI players to play the game in turns and return the game result. 
+    '''
+
+    # ----------------------------------------------
+    def initial_game_state(self):
+        '''
+           Create an initial game state.  
+            Return:
+                s: the initial state of the game, an integer matrix (TicTacToe: shape 3 by 3)
+                    s[i,j] = 0 denotes that the i-th row and j-th column is empty
+                    s[i,j] = 1 denotes that the i-th row and j-th column is taken by "X". 
+                    s[i,j] = -1 denotes that the i-th row and j-th column is taken by the "O".
+        '''
+        b = np.zeros((3,3)) # start with an empty board
+        s = GameState(b,x=1) # 'X' Player moves first
+        return s 
+
+    #-------------------------------------------------------
+    def check_valid_move(self,s,r,c):
+        '''
+            check if a move is valid or not.
+            Return True if valid, otherwise return False.
+            Input:
+                s: the current state of the game, which is an object of GameState class.
+                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
+                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
+                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
+                    s.x: who's turn in this step of the game, 1 if "X" player's turn; -1 if "O" player's turn 
+                r: the row number of the move
+                c: the column number of the move
+            Outputs:
+                valid: boolean scalar, True (if the move is valid), otherwise False 
+        '''
+        return s.b[r][c]==0 # if the cell is empty, it is a valid move 
+
+    #-------------------------------------------------------
+    ''' 
+        Utility Functions: Let's first implement some utility functions for Tic-Tac-Toe game. 
+        We will need to use them later.
+    '''
+    # ----------------------------------------------
+    def get_valid_moves(self, s):
+        '''
+           Get a list of available (valid) next moves from a game state of TicTacToe 
+            Input:
+                s: the current state of the game, which is an object of GameState class.
+                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
+                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
+                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
+                    For example, the following game state 
+                     | X |   | O |
+                     | O | X |   |
+                     | X |   | O |
+                    is represented as the following numpy matrix in game state
+                    s.b= [[ 1 , 0 ,-1 ],
+                          [-1 , 1 , 0 ],
+                          [ 1 , 0 ,-1 ]]
+            Outputs:
+                m: a list of possible next moves, where each next move is a (r,c) tuple, 
+                   r denotes the row number, c denotes the column number. 
+            For example, for the following game state, 
+                  s.b= [[ 1 , 0 ,-1 ],
+                        [-1 , 1 , 0 ],
+                        [ 1 , 0 ,-1 ]]
+            the valid moves are the empty grid cells: 
+                (r=0,c=1) --- the first row, second column 
+                (r=1,c=2) --- the second row, the third column 
+                (r=2,c=1) --- the third row , the second column
+            So the list of valid moves is m = [(0,1),(1,2),(2,1)]
+            Hint: you could use np.where() function to find the indices of the elements in an array, where a test condition is true.
+            Hint: you could solve this problem using 2 lines of code.
+        '''
+        #########################################
+        ## INSERT YOUR CODE HERE
+        rs,cs=np.where(s.b==0)
+        m = list(zip(rs,cs))
+        #########################################
+        return m
+    
+    
+        ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test1.py:test_get_valid_moves' in the terminal.  '''
+
+
+    # ----------------------------------------------
+    def check_game(self,s):
+        '''
+            check if the TicTacToe game has ended or not. 
+            If yes (game ended), return the game result (1: x_player win, -1: o_player win, 0: draw)
+            If no (game not ended yet), return None 
+            
+            Input:
+                s: the current state of the game, which is an object of GameState class.
+                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
+                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
+                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
+                    s.x: who's turn in this step of the game, 1 if "X" player's turn; -1 if "O" player's turn 
+            Outputs:
+                e: the result, an integer scalar with value 0, 1 or -1.
+                    if e = None, the game has not ended yet.
+                    if e = 0, the game ended with a draw.
+                    if e = 1, X player won the game.
+                    if e = -1, O player won the game.
+            Hint: you could solve this problem using 11 lines of code.
+        '''
+        #########################################
+        ## INSERT YOUR CODE HERE
+        b = s.b
+        x = b.sum(axis=0)
+        y = b.sum(axis=1)
+        # check the 8 lines in the board to see if the game has ended.
+        z = [ b[0,0] + b[1,1] + b[2,2], b[0,2] + b[1,1] + b[2,0]] 
+        t=np.concatenate((x,y,z))
+        # if the game has ended, return the game result 
+        if np.any(t==3):
+            return 1
+        if np.any(t==-3):
+            return -1
+        if np.sum(b==0)==0:
+            return 0
+        # if the game has not ended, return None
+        e = None 
+        #########################################
+        return e
+    
+        ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test1.py:test_check_game' in the terminal.  '''
+
+
+    # ----------------------------------------------
+    def apply_a_move(self,s,r,c):
+        '''
+            Apply a move of a player to the TicTacToe game and change the game state accordingly. 
+            Input:
+                s: the current state of the game, which is an object of GameState class.
+                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
+                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
+                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
+                    s.x: who's turn in this step of the game, 1 if "X" player's turn; -1 if "O" player's turn 
+                r: the row number of the move, an integer scalar.
+                c: the column number of the move, an integer scalar.
+            Result:
+                s: the game state in the next step of the game, after applying the move 
+
+            For example, suppose the current game state is:
+                  s.b=[[ 0, 1, 1],
+                       [ 0,-1,-1],
+                       [ 1,-1, 1]]
+            and it's "O" player's turn s.x=-1.
+            If the "O" player chooses the move (r=1,c=0), then after applying the move on the board,
+            the game state becomes:
+                  s.b=[[ 0, 1, 1],
+                       [-1,-1,-1],
+                       [ 1,-1, 1]]
+                and s.x = 1 (X player's turn in the next step)
+        '''
+        assert self.check_valid_move(s,r,c) # check whether the step is valid or not
+        s.b[r,c]=s.x # fill the empty cell with the current player's stone
+        s.x *= -1 # two players take turns to play
+
 
 #-------------------------------------------------------------------------
 '''
@@ -915,23 +1088,4 @@ class GO(BoardGame):
                             s.p=g.pop()
         s.x*=-1
         s.t+=1 # game step +1
-
-
-#-------------------------------------------------------
-class MemoryTree(ABC):
-
-    def get_node(self, s):
-        return self.tree.get(s, None)
-
-    @abstractmethod
-    def fill_mem(self, s, n):
-        pass
-
-    @abstractmethod
-    def export_mem(self, file):
-        pass
-    
-    @abstractmethod
-    def load_mem(self, file):
-        pass
 

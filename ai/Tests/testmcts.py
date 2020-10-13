@@ -3,9 +3,9 @@ import sys
 import os
 sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
 from mcts import *
-from minimax import MiniMaxPlayer, TicTacToe, GameState
+from minimax import MiniMaxPlayer, GameState
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import Othello 
+from game import Othello, TicTacToe
 
 '''
     Unit test 2:
@@ -14,12 +14,12 @@ from game import Othello
 
 #-------------------------------------------------------------------------
 def test_python_version():
-    ''' ----------- Monte Carlo (65 points in total)---------------------'''
+    ''' ----------- Monte Carlo---------------------'''
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
 
 #-------------------------------------------------------------------------
 def test_sample():
-    '''(5 points) sample'''
+    '''sample'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -157,7 +157,7 @@ def test_sample():
 
 #-------------------------------------------------------------------------
 def test_expand():
-    '''(5 points) expand'''
+    '''expand'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -459,7 +459,7 @@ def test_expand():
 
 #-------------------------------------------------------------------------
 def test_backprop():
-    '''(5 points) backprop'''
+    '''backprop'''
 
     #---------------------
     # Game: TicTacToe
@@ -515,7 +515,7 @@ def test_backprop():
 
 #-------------------------------------------------------------------------
 def test_compute_UCB():
-    '''(5 points) compute_UCB'''
+    '''compute_UCB'''
 
     # X player's turn, want to maximize the average score in vi/ni
     u = MCNode.compute_UCB(1,1,1,x=1)
@@ -558,7 +558,7 @@ def test_compute_UCB():
 
 #-------------------------------------------------------------------------
 def test_select_a_child():
-    '''(5 points) select_a_child'''
+    '''select_a_child'''
 
     #---------------------
     # Game: TicTacToe
@@ -650,7 +650,7 @@ def test_select_a_child():
 
 #-------------------------------------------------------------------------
 def test_selection():
-    '''(5 points) selection'''
+    '''selection'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -768,7 +768,7 @@ def test_selection():
 
 #-------------------------------------------------------------------------
 def test_build_tree():
-    '''(5 points) build_tree'''
+    '''build_tree'''
 
     #---------------------
     # Game: TicTacToe
@@ -897,7 +897,7 @@ def test_build_tree():
 
 #-------------------------------------------------------------------------
 def test_choose_optimal_move():
-    '''(5 points) choose_optimal_move'''
+    '''choose_optimal_move'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -963,7 +963,7 @@ def test_choose_optimal_move():
 
 #-------------------------------------------------------------------------
 def test_MCTS_choose_a_move():
-    '''(10 points) MCTS choose_a_move'''
+    '''MCTS choose_a_move'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
@@ -1094,12 +1094,12 @@ def test_MCTS_choose_a_move():
 
 #-------------------------------------------------------------------------
 def test_fill_mem():
-    '''(5 points) fill_mem'''
+    '''fill_mem'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     m = MCMemory()
-    m.tree = {}
+    m.dictionary = {}
 
     #-------------------------
     b=np.array([[ 0, 0, 0],
@@ -1107,32 +1107,32 @@ def test_fill_mem():
                 [ 0, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
     n = MCNode(s)
-    m.fill_mem(s, n)
-    mem_n = m.tree.get(s, None)
-    assert len(m.tree) == 1
+    m.fill_mem(n)
+    mem_n = m.dictionary.get(s, None)
+    assert len(m.dictionary) == 1
     assert n == mem_n
 
-    m.fill_mem(s, n)
-    assert len(m.tree) == 1
+    m.fill_mem(n)
+    assert len(m.dictionary) == 1
 
     #-------------------------
     p1 = MCTSPlayer()
-    p1.mem.tree = {}
+    p1.mem.dictionary = {}
     n = MCNode(s)
     n.expand(g,p1) # only children nodes called to fill_mem
-    mem_n1 = p1.mem.tree.get(s, None)
+    mem_n1 = p1.mem.dictionary.get(s, None)
     assert isinstance(p1.mem, MCMemory)
-    assert len(p1.mem.tree) == 9
+    assert len(p1.mem.dictionary) == 9
     assert mem_n1 == None
 
     #-------------------------
     p2 = MCTSPlayer()
-    p2.mem.tree = {}
+    p2.mem.dictionary = {}
     n = MCNode(s)
     n.build_tree(g,1,p2) # root and children nodes called to fill_mem
-    mem_n2 = p2.mem.tree.get(s, None)
+    mem_n2 = p2.mem.dictionary.get(s, None)
     assert isinstance(p2.mem, MCMemory)
-    assert len(p2.mem.tree) == 10
+    assert len(p2.mem.dictionary) == 10
     assert mem_n2 == n
     assert mem_n2.N == 1
 
@@ -1142,7 +1142,7 @@ def test_fill_mem():
     # Game: Othello 
     g = Othello()  # game 
     m = MCMemory()
-    m.tree = {}
+    m.dictionary = {}
     b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1153,27 +1153,27 @@ def test_fill_mem():
                 [ 0, 0, 0, 0, 0, 0, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
     n = MCNode(s)
-    m.fill_mem(s,n)
-    mem_n = m.tree.get(s, None)
-    assert len(m.tree) == 1
+    m.fill_mem(n)
+    mem_n = m.dictionary.get(s, None)
+    assert len(m.dictionary) == 1
     assert n == mem_n
 
     p = MCTSPlayer()
-    p.mem.tree = {}
+    p.mem.dictionary = {}
     n.build_tree(g,1,p)
     assert isinstance(p.mem, MCMemory)
-    assert len(p.mem.tree) > 0
+    assert len(p.mem.dictionary) > 0
     assert n.N == 1
 
     
 #-------------------------------------------------------------------------
 def test_get_node():
-    '''(5 points) get_node'''
+    '''get_node'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     m = MCMemory()
-    m.tree = {}
+    m.dictionary = {}
 
     #-------------------------
     b=np.array([[ 0, 0, 0],
@@ -1183,19 +1183,19 @@ def test_get_node():
     n = MCNode(s)
     mem_n = m.get_node(s)
     assert mem_n == None
-    m.fill_mem(s, n)
+    m.fill_mem(n)
     mem_n = m.get_node(s)
     assert n == mem_n
 
 
 #-------------------------------------------------------------------------
 def test_MCTS_memory():
-    '''(5 points) MCTS memory'''
+    '''MCTS memory'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     p = MCTSPlayer()
-    p.mem.tree = {}
+    p.mem.dictionary = {}
     assert isinstance(p.mem, MCMemory)
 
     #-------------------------
@@ -1206,7 +1206,7 @@ def test_MCTS_memory():
     n = MCNode(s1)
     n.build_tree(g,1,p)
     mem_n = p.mem.get_node(s1)
-    assert len(p.mem.tree) == 10
+    assert len(p.mem.dictionary) == 10
     assert n == mem_n
     assert n.N == 1
 
@@ -1222,21 +1222,21 @@ def test_MCTS_memory():
     p2 = RandomPlayer()
     _ = g.run_a_game(p,p2,s1)
     mem_n = p.mem.get_node(s2)
-    assert len(p.mem.tree) > 10
+    assert len(p.mem.dictionary) > 10
     assert (n.N % p.n_iter) == 1
     assert n.v > 0
     assert mem_n != None
 
     #-------------------------
     p = MCTSPlayer()
-    p.mem.tree = {}
+    p.mem.dictionary = {}
     b=np.array([[ 1,-1, 1],
                 [ 0, 0,-1],
                 [ 0, 1,-1]])
     s = GameState(b,x=1) # it's X player's turn
     n = MCNode(s)
     n.build_tree(g,p.n_iter,p)
-    assert len(p.mem.tree) > 0 
+    assert len(p.mem.dictionary) > 0 
     assert n.N == 100
     assert n.v > 0
 
@@ -1254,14 +1254,14 @@ def test_MCTS_memory():
 
     #-------------------------
     p = MCTSPlayer()
-    p.mem.tree = {}
+    p.mem.dictionary = {}
     p2 = RandomPlayer()
     b=np.array([[ 0, 0, 0],
                 [ 0, 0, 0],
                 [ 0, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
     n = MCNode(s)
-    p.mem.fill_mem(s, n)
+    p.mem.fill_mem(n)
     _ = g.run_a_game(p,p2,s)
     assert (n.N % p.n_iter) == 0
     assert n.v > 0
@@ -1276,7 +1276,7 @@ def test_MCTS_memory():
     # Game: Othello 
     g = Othello()  # game 
     p = MCTSPlayer()
-    p.mem.tree = {}
+    p.mem.dictionary = {}
     b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1287,7 +1287,7 @@ def test_MCTS_memory():
                 [ 0, 0, 0, 0, 0, 0, 0, 0]])
     s = GameState(b,x=1) # it's X player's turn
     n = MCNode(s)
-    p.mem.fill_mem(s, n)
+    p.mem.fill_mem(n)
     _ = g.run_a_game(p,p2,s)
     assert (n.N % p.n_iter) == 0
     assert n.v > 0

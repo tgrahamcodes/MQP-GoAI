@@ -4,175 +4,14 @@ import numpy as np
 import pickle
 import sys
 import os
+from memory import MemoryDict
 sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import GameState,BoardGame, Player, MemoryTree
+from game import GameState, Player
 #-------------------------------------------------------------------------
 '''
     Problem 1: TicTacToe and MiniMax AI player 
     In this problem, you will implement two different AI players for the TicTacToe game.
 '''
-
-#-------------------------------------------------------
-class TicTacToe(BoardGame):
-    '''
-        TicTacToe game environment: the goal is to provide a platform for two AI players to play the game in turns and return the game result. 
-    '''
-
-    # ----------------------------------------------
-    def initial_game_state(self):
-        '''
-           Create an initial game state.  
-            Return:
-                s: the initial state of the game, an integer matrix (TicTacToe: shape 3 by 3)
-                    s[i,j] = 0 denotes that the i-th row and j-th column is empty
-                    s[i,j] = 1 denotes that the i-th row and j-th column is taken by "X". 
-                    s[i,j] = -1 denotes that the i-th row and j-th column is taken by the "O".
-        '''
-        b = np.zeros((3,3)) # start with an empty board
-        s = GameState(b,x=1) # 'X' Player moves first
-        return s 
-
-    #-------------------------------------------------------
-    def check_valid_move(self,s,r,c):
-        '''
-            check if a move is valid or not.
-            Return True if valid, otherwise return False.
-            Input:
-                s: the current state of the game, which is an object of GameState class.
-                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
-                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
-                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
-                    s.x: who's turn in this step of the game, 1 if "X" player's turn; -1 if "O" player's turn 
-                r: the row number of the move
-                c: the column number of the move
-            Outputs:
-                valid: boolean scalar, True (if the move is valid), otherwise False 
-        '''
-        return s.b[r][c]==0 # if the cell is empty, it is a valid move 
-
-    #-------------------------------------------------------
-    ''' 
-        Utility Functions: Let's first implement some utility functions for Tic-Tac-Toe game. 
-        We will need to use them later.
-    '''
-    # ----------------------------------------------
-    def get_valid_moves(self, s):
-        '''
-           Get a list of available (valid) next moves from a game state of TicTacToe 
-            Input:
-                s: the current state of the game, which is an object of GameState class.
-                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
-                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
-                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
-                    For example, the following game state 
-                     | X |   | O |
-                     | O | X |   |
-                     | X |   | O |
-                    is represented as the following numpy matrix in game state
-                    s.b= [[ 1 , 0 ,-1 ],
-                          [-1 , 1 , 0 ],
-                          [ 1 , 0 ,-1 ]]
-            Outputs:
-                m: a list of possible next moves, where each next move is a (r,c) tuple, 
-                   r denotes the row number, c denotes the column number. 
-            For example, for the following game state, 
-                  s.b= [[ 1 , 0 ,-1 ],
-                        [-1 , 1 , 0 ],
-                        [ 1 , 0 ,-1 ]]
-            the valid moves are the empty grid cells: 
-                (r=0,c=1) --- the first row, second column 
-                (r=1,c=2) --- the second row, the third column 
-                (r=2,c=1) --- the third row , the second column
-            So the list of valid moves is m = [(0,1),(1,2),(2,1)]
-            Hint: you could use np.where() function to find the indices of the elements in an array, where a test condition is true.
-            Hint: you could solve this problem using 2 lines of code.
-        '''
-        #########################################
-        ## INSERT YOUR CODE HERE
-        rs,cs=np.where(s.b==0)
-        m = list(zip(rs,cs))
-        #########################################
-        return m
-    
-    
-        ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test1.py:test_get_valid_moves' in the terminal.  '''
-
-
-    # ----------------------------------------------
-    def check_game(self,s):
-        '''
-            check if the TicTacToe game has ended or not. 
-            If yes (game ended), return the game result (1: x_player win, -1: o_player win, 0: draw)
-            If no (game not ended yet), return None 
-            
-            Input:
-                s: the current state of the game, which is an object of GameState class.
-                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
-                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
-                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
-                    s.x: who's turn in this step of the game, 1 if "X" player's turn; -1 if "O" player's turn 
-            Outputs:
-                e: the result, an integer scalar with value 0, 1 or -1.
-                    if e = None, the game has not ended yet.
-                    if e = 0, the game ended with a draw.
-                    if e = 1, X player won the game.
-                    if e = -1, O player won the game.
-            Hint: you could solve this problem using 11 lines of code.
-        '''
-        #########################################
-        ## INSERT YOUR CODE HERE
-        b = s.b
-        x = b.sum(axis=0)
-        y = b.sum(axis=1)
-        # check the 8 lines in the board to see if the game has ended.
-        z = [ b[0,0] + b[1,1] + b[2,2], b[0,2] + b[1,1] + b[2,0]] 
-        t=np.concatenate((x,y,z))
-        # if the game has ended, return the game result 
-        if np.any(t==3):
-            return 1
-        if np.any(t==-3):
-            return -1
-        if np.sum(b==0)==0:
-            return 0
-        # if the game has not ended, return None
-        e = None 
-        #########################################
-        return e
-    
-        ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test1.py:test_check_game' in the terminal.  '''
-
-
-    # ----------------------------------------------
-    def apply_a_move(self,s,r,c):
-        '''
-            Apply a move of a player to the TicTacToe game and change the game state accordingly. 
-            Input:
-                s: the current state of the game, which is an object of GameState class.
-                    s.b[i,j] = 0 denotes that the i-th row and j-th column is empty
-                    s.b[i,j] = 1 denotes that the i-th row and j-th column is taken by "X" player. 
-                    s.b[i,j] = -1 denotes that the i-th row and j-th column is taken by "O" player.
-                    s.x: who's turn in this step of the game, 1 if "X" player's turn; -1 if "O" player's turn 
-                r: the row number of the move, an integer scalar.
-                c: the column number of the move, an integer scalar.
-            Result:
-                s: the game state in the next step of the game, after applying the move 
-
-            For example, suppose the current game state is:
-                  s.b=[[ 0, 1, 1],
-                       [ 0,-1,-1],
-                       [ 1,-1, 1]]
-            and it's "O" player's turn s.x=-1.
-            If the "O" player chooses the move (r=1,c=0), then after applying the move on the board,
-            the game state becomes:
-                  s.b=[[ 0, 1, 1],
-                       [-1,-1,-1],
-                       [ 1,-1, 1]]
-                and s.x = 1 (X player's turn in the next step)
-        '''
-        assert self.check_valid_move(s,r,c) # check whether the step is valid or not
-        s.b[r,c]=s.x # fill the empty cell with the current player's stone
-        s.x *= -1 # two players take turns to play
-
 
 #-------------------------------------------------------
 ''' 
@@ -955,17 +794,17 @@ class MiniMaxPlayer(Player):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
+        self.mem.fill_mem()
 
         # (1) build a search tree with the current game state as the root node
-
-        if not self.mem.tree:
+        if not self.mem.dictionary:
             n = MMNode(s)
             n.build_tree(g)
 
             # (2) compute values of all tree nodes
             n.compute_v(g)
 
-            self.mem.fill_mem(s, n)
+            self.mem.fill_mem(n)
             self.mem.export_mem()
 
         else:
@@ -975,7 +814,7 @@ class MiniMaxPlayer(Player):
                 n = MMNode(s)
                 n.build_tree(g)
                 n.compute_v(g)
-                self.mem.fill_mem(s, n)
+                self.mem.fill_mem(n)
         
         # (3) choose the optimal next move
         r,c = self.choose_optimal_move(n)
@@ -986,64 +825,23 @@ class MiniMaxPlayer(Player):
 
 
 #--------------------------------------------
-class MMMemory(MemoryTree):
+class MMMemory(MemoryDict):
 
-    def __init__(self, file="..\\GOAI\\ai\\Players\\Memory\\MMTree.p"):
-        if os.path.isfile(file):
-            self.tree = self.load_mem()
-        else:
-            self.tree = {}
+    def __init__(self):
+        self.dictionary = {}
 
-    def fill_mem(self, s, n):
-        if s not in self.tree:
-            self.tree[s] = n
+    def fill_mem(self, n=None, file="..\\GOAI\\ai\\Players\\Memory\\MMDict.p"):
+        if os.path.isfile(file) and not self.dictionary:
+            self.dictionary = self.load_mem()
+        elif n:
+            self.dictionary[n.s] = n
 
-        for c in n.c:
-            self.fill_mem(c.s, c)
+            for c in n.c:
+                self.fill_mem(c)
         
-    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMTree.p"):
-        pickle.dump(self.tree, open(file, "wb"))
+    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMDict.p"):
+        pickle.dump(self.dictionary, open(file, "wb"))
 
-    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMTree.p"):
+    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMDict.p"):
         return pickle.load(open(file, "rb"))
-
-
-#--------------------------------------------
-
-''' TEST Problem 1: 
-        Now you can test the correctness of all the above functions by typing `nosetests -v test1.py' in the terminal.  
-
-        If your code passed all the tests, you will see the following message in the terminal:
-            ----------- Problem 1 (50 points in total)--------------------- ... ok
-            (5 points) get_valid_moves() ... ok
-            (5 points) check_game() ... ok
-            (5 points) apply_a_move() ... ok
-            (5 points) random choose_a_move() ... ok
-            (5 points) expand ... ok
-            (5 points) build_tree ... ok
-            (5 points) compute_v() ... ok
-            (5 points) choose_optimal_move() ... ok
-            (10 points) minmax choose_a_move() ... ok
-            ----------------------------------------------------------------------
-            Ran 10 tests in 2.939s            
-            OK
-'''
-
-#--------------------------------------------
-
-
-
-
-#-----------------------------------------------
-''' 
-    Great job!
-    DEMO 1: If your code has passed all the above tests, now you can play TicTacToe game with the AI (MiniMaxPlayer) 
-    by typing `python3 demo1.py minimax' in the terminal.  
-'''
-#-----------------------------------------------
-''' DEMO 2: Othello: Unfortunately, Othello is a larger game where the MiniMax method won't work. 
-    In larger games, we will need sampling-based method, such as Monte-Carlo Tree Search in Problem 2'''
-#-----------------------------------------------
-
-
 
