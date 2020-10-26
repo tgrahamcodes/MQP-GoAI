@@ -1,11 +1,9 @@
 import pygame
 import numpy as np
 import sys
-import os
-sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
-from minimax import RandomPlayer, MiniMaxPlayer
-from mcts import MCTSPlayer
-sys.path.append(os.path.abspath('..\\GoAI\\ai'))
+from pathlib import Path
+from Players.minimax import RandomPlayer, MiniMaxPlayer
+from Players.mcts import MCTSPlayer
 from game import TicTacToe 
 
 '''
@@ -32,8 +30,10 @@ lineSize = 5
 backgroundColor = (0, 0, 0)
 
 # load image for stones
-x_img = pygame.image.load('..\\GOAI\\ai\\x.png')
-o_img = pygame.image.load('..\\GOAI\\ai\\o.png')
+x_file = Path(__file__).parents[1].joinpath('x.PNG')
+o_file = Path(__file__).parents[1].joinpath('o.PNG')
+x_img = pygame.image.load(str(x_file))
+o_img = pygame.image.load(str(o_file))
 
 #---------------------------------------------
 def map_mouse_to_board(x, y):
@@ -129,9 +129,8 @@ def init_screen():
     # start the display window
     win = pygame.display.set_mode((screenSize, screenSize))
 
-
     # set icon
-    icon = pygame.image.load('..\\GOAI\\ai\\o.png')
+    icon = pygame.image.load(str(o_file))
     pygame.display.set_icon(icon)
 
     # Title
@@ -192,8 +191,6 @@ def run_a_game(p):
             # Human player's turn to choose a move
             # get mouse position
             (mouseX, mouseY) = pygame.mouse.get_pos()
-            # print(mouseX)
-            # print(mouseY)
             # convert to board grid (row,column)
             r, c = map_mouse_to_board(mouseX, mouseY)
             # if the move is valid 

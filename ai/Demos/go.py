@@ -1,11 +1,9 @@
 import pygame
 import numpy as np
 import sys
-import os
-sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
-from minimax import RandomPlayer 
-from mcts import MCTSPlayer
-sys.path.append(os.path.abspath('..\\GoAI\\ai'))
+from pathlib import Path
+from Players.minimax import RandomPlayer 
+from Players.mcts import MCTSPlayer
 from game import GO 
 
 '''
@@ -149,7 +147,8 @@ def init_screen():
 
 
     # set icon
-    icon = pygame.image.load('..\\GOAI\\ai\\o.png')
+    o_file = Path(__file__).parents[1].joinpath('o.PNG')
+    icon = pygame.image.load(str(o_file))
     pygame.display.set_icon(icon)
 
     # Title

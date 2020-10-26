@@ -4,8 +4,8 @@ import numpy as np
 import pickle
 import sys
 import os
-from memory import MemoryDict
-sys.path.append(os.path.abspath('..\\GoAI\\ai'))
+from pathlib import Path
+from .memory import MemoryDict
 from game import GameState, Player
 #-------------------------------------------------------------------------
 '''
@@ -829,9 +829,10 @@ class MMMemory(MemoryDict):
 
     def __init__(self):
         self.dictionary = {}
+        self.file = Path(__file__).parents[0].joinpath('Memory/MM_TicTacToe.p')
 
-    def fill_mem(self, n=None, file="..\\GOAI\\ai\\Players\\Memory\\MMDict.p"):
-        if os.path.isfile(file) and not self.dictionary:
+    def fill_mem(self, n=None):
+        if Path.is_file(self.file) and not self.dictionary:
             self.dictionary = self.load_mem()
         elif n:
             self.dictionary[n.s] = n
@@ -839,9 +840,9 @@ class MMMemory(MemoryDict):
             for c in n.c:
                 self.fill_mem(c)
         
-    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMDict.p"):
-        pickle.dump(self.dictionary, open(file, "wb"))
+    def export_mem(self):
+        pickle.dump(self.dictionary, open(self.file, "wb"))
 
-    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MMDict.p"):
-        return pickle.load(open(file, "rb"))
+    def load_mem(self):
+        return pickle.load(open(self.file, "rb"))
 

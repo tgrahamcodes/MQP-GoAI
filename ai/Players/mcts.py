@@ -3,10 +3,10 @@ import numpy as np
 import pickle
 import sys
 import os
-from minimax import RandomPlayer, Node
-from memory import MemoryDict
-sys.path.append(os.path.abspath('..\\GoAI\\ai'))
-from game import BoardGame, Player
+from pathlib import Path
+from .minimax import RandomPlayer, Node
+from .memory import MemoryDict
+from game import BoardGame, Player, TicTacToe, Othello, GO
 #-------------------------------------------------------------------------
 '''
     Problem 2: Monte Carlo Tree Search (MCTS) 
@@ -183,7 +183,6 @@ class MCNode(Node):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
-    
         # get the list of valid next move-state pairs from the current game state
         p=g.get_move_state_pairs(self.s)
         # expand the node with one level of children nodes 
@@ -762,16 +761,19 @@ class MCTSPlayer(Player):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
+        if self.mem.file == None:
+            self.mem.select_file(g)
+            self.mem.load_mem()
+
         if not self.mem.dictionary:
             # create a tree node (n) with the current game state 
             n = MCNode(s)
             # build a search tree with the tree node (n) as the root and n_iter as the number of simulations
             n.build_tree(g,self.n_iter,self)
-            n = self.mem.get_node(s)
 
         else:
             n = self.mem.get_node(s)
-
+            
             # if node is not yet in memory
             if not n:
                 n = MCNode(s)
@@ -791,17 +793,23 @@ class MCTSPlayer(Player):
 #--------------------------------------------
 class MCMemory(MemoryDict):
 
-    def __init__(self, file="..\\GOAI\\ai\\Players\\Memory\\MCDict.p"):
+    def __init__(self):
         self.dictionary = {}
-        if os.path.isfile(file):
-            self.dictionary = self.load_mem()
+        self.file = None
+
+    def select_file(self, g):
+        if isinstance(g, GO):
+            self.file = Path(__file__).parents[0].joinpath('Memory/MC_' + g.__class__.__name__ + '_' + str(g.N) + 'x' + str(g.N) + '.p')
+        else:
+            self.file = Path(__file__).parents[0].joinpath('Memory/MC_' + g.__class__.__name__ + '.p')
 
     def fill_mem(self, n):
         self.dictionary[n.s] = n
     
-    def export_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCDict.p"):
-        pickle.dump(self.dictionary, open(file, "wb"))
+    def export_mem(self):
+        pickle.dump(self.dictionary, open(self.file, "wb"))
 
-    def load_mem(self, file="..\\GOAI\\ai\\Players\\Memory\\MCDict.p"):
-        return pickle.load(open(file, "rb"))
+    def load_mem(self):
+        if Path.is_file(self.file):
+            self.dictionary = pickle.load(open(self.file, "rb"))
 

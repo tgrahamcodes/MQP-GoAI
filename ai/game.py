@@ -220,8 +220,7 @@ class BoardGame(ABC):
             assert self.check_valid_move(s,r,c) # the move must be valid
             self.apply_a_move(s,r,c) # apply the move and update game state
 
-        sys.path.append(os.path.abspath('..\\GoAI\\ai\\Players'))
-        from mcts import MCTSPlayer
+        from Players.mcts import MCTSPlayer
         if isinstance(x_player, MCTSPlayer):
             x_player.mem.export_mem()
         if isinstance(o_player, MCTSPlayer):
