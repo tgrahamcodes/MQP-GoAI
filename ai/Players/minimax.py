@@ -841,6 +841,9 @@ class MMMemory(MemoryDict):
                 self.fill_mem(c)
         
     def export_mem(self):
+        directory = Path(__file__).parents[0].joinpath('Memory')
+        if not directory.is_dir():
+            directory.mkdir()
         pickle.dump(self.dictionary, open(self.file, "wb"))
 
     def load_mem(self):

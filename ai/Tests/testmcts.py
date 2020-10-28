@@ -1044,8 +1044,8 @@ def test_MCTS_choose_a_move():
     for i in range(10):
         b=np.array([[ 0, 0, 0],
                     [ 1,-1, 0],
-                    [ 0, 0, 0]])
-        s = GameState(b,x=1)
+                    [ 1, 0, 0]])
+        s = GameState(b,x=-1)
         e = g.run_a_game(p1,p1,s)
         w += e
     assert np.abs(w)<5
@@ -1100,7 +1100,7 @@ def test_fill_mem():
     # Game: TicTacToe
     g = TicTacToe()  # game 
     m = MCMemory()
-    m.file = 'dummy'
+    m.file = 'testing'
 
     #-------------------------
     b=np.array([[ 0, 0, 0],
@@ -1118,7 +1118,7 @@ def test_fill_mem():
 
     #-------------------------
     p1 = MCTSPlayer()
-    p1.mem.file = 'dummy'
+    p1.mem.file = 'testing'
     n = MCNode(s)
     n.expand(g,p1) # only children nodes called to fill_mem
     mem_n1 = p1.mem.dictionary.get(s, None)
@@ -1128,7 +1128,7 @@ def test_fill_mem():
 
     #-------------------------
     p2 = MCTSPlayer()
-    p2.mem.file = 'dummy'
+    p2.mem.file = 'testing'
     n = MCNode(s)
     n.build_tree(g,1,p2) # root and children nodes called to fill_mem
     mem_n2 = p2.mem.dictionary.get(s, None)
@@ -1143,7 +1143,7 @@ def test_fill_mem():
     # Game: Othello 
     g = Othello()  # game 
     m = MCMemory()
-    m.file = 'dummy'
+    m.file = 'testing'
     b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1174,7 +1174,7 @@ def test_get_node():
     # Game: TicTacToe
     g = TicTacToe()  # game 
     m = MCMemory()
-    m.file = 'dummy'
+    m.file = 'testing'
 
     #-------------------------
     b=np.array([[ 0, 0, 0],
@@ -1196,7 +1196,7 @@ def test_MCTS_memory():
     # Game: TicTacToe
     g = TicTacToe()  # game 
     p = MCTSPlayer()
-    p.mem.file = Path(__file__).parents[0].joinpath('test_MCTS_memory()_tictactoe.p')
+    p.mem.file = 'testing'
     assert isinstance(p.mem, MCMemory)
 
     #-------------------------
@@ -1230,7 +1230,7 @@ def test_MCTS_memory():
 
     #-------------------------
     p = MCTSPlayer()
-    p.mem.file = Path(__file__).parents[0].joinpath('test_MCTS_memory()_tictactoe.p')
+    p.mem.file = 'testing'
     b=np.array([[ 1,-1, 1],
                 [ 0, 0,-1],
                 [ 0, 1,-1]])
@@ -1255,7 +1255,7 @@ def test_MCTS_memory():
 
     #-------------------------
     p = MCTSPlayer()
-    p.mem.file = Path(__file__).parents[0].joinpath('test_MCTS_memory()_tictactoe.p')
+    p.mem.file = 'testing'
     p2 = RandomPlayer()
     b=np.array([[ 0, 0, 0],
                 [ 0, 0, 0],
@@ -1277,7 +1277,7 @@ def test_MCTS_memory():
     # Game: Othello 
     g = Othello()  # game 
     p = MCTSPlayer()
-    p.mem.file = Path(__file__).parents[0].joinpath('test_MCTS_memory()_othello.p')
+    p.mem.file = 'testing'
     b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],

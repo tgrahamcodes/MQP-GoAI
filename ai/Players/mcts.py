@@ -773,11 +773,9 @@ class MCTSPlayer(Player):
 
         else:
             n = self.mem.get_node(s)
-            
             # if node is not yet in memory
             if not n:
                 n = MCNode(s)
-
             # simulate and update existing nodes
             n.build_tree(g,self.n_iter,self)
 
@@ -807,6 +805,9 @@ class MCMemory(MemoryDict):
         self.dictionary[n.s] = n
     
     def export_mem(self):
+        directory = Path(__file__).parents[0].joinpath('Memory')
+        if not directory.is_dir():
+            directory.mkdir()
         pickle.dump(self.dictionary, open(self.file, "wb"))
 
     def load_mem(self):

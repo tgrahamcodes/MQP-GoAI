@@ -221,9 +221,9 @@ class BoardGame(ABC):
             self.apply_a_move(s,r,c) # apply the move and update game state
 
         from Players.mcts import MCTSPlayer
-        if isinstance(x_player, MCTSPlayer):
+        if isinstance(x_player, MCTSPlayer) and x_player.mem.file != 'testing':
             x_player.mem.export_mem()
-        if isinstance(o_player, MCTSPlayer):
+        if isinstance(o_player, MCTSPlayer) and x_player.mem.file != 'testing':
             o_player.mem.export_mem()
         
         return e
@@ -737,6 +737,12 @@ class GO_state(GameState):
         self.p = p
         self.a = a 
         self.t = t 
+
+    def __hash__(self):
+        return hash(str(self.b) + str(self.x) + str(self.p) + str(self.a) + str(self.t))
+
+    def __eq__(self, other):
+        return (str(self.b) + str(self.x) + str(self.p) + str(self.a) + str(self.t) == other)
 
 #-------------------------------------------------------
 class GO(BoardGame):

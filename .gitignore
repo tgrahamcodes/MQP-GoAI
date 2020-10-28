@@ -1,3 +1,4 @@
 .vscode
 .idea
 ai/Tests/*.p
+ai/Players/Memory
