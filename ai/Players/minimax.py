@@ -5,7 +5,7 @@ import pickle
 import sys
 import os
 from pathlib import Path
-from .memory import MemoryDict
+from .memory import MemoryDict, RandomNN
 from game import GameState, Player
 #-------------------------------------------------------------------------
 '''
@@ -709,6 +709,7 @@ class MiniMaxPlayer(Player):
     '''
     def __init__(self):
         self.mem = MMMemory()
+        self.model = RandomNN()
 
     #----------------------------------------------
     # Let's first implement step (3): choose optimal next move
@@ -794,31 +795,44 @@ class MiniMaxPlayer(Player):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
-        self.mem.fill_mem()
+        # self.mem.fill_mem()
 
-        # (1) build a search tree with the current game state as the root node
-        if not self.mem.dictionary:
-            n = MMNode(s)
-            n.build_tree(g)
+        # # (1) build a search tree with the current game state as the root node
+        # if not self.mem.dictionary:
+        #     n = MMNode(s)
+        #     n.build_tree(g)
 
-            # (2) compute values of all tree nodes
-            n.compute_v(g)
+        #     # (2) compute values of all tree nodes
+        #     n.compute_v(g)
 
-            self.mem.fill_mem(n)
-            self.mem.export_mem()
+        #     self.mem.fill_mem(n)
+        #     self.mem.export_mem()
 
-        else:
-            n = self.mem.get_node(s)
+        # else:
+        #     n = self.mem.get_node(s)
 
-            if not n:
-                n = MMNode(s)
-                n.build_tree(g)
-                n.compute_v(g)
-                self.mem.fill_mem(n)
+        #     if not n:
+        #         n = MMNode(s)
+        #         n.build_tree(g)
+        #         n.compute_v(g)
+        #         self.mem.fill_mem(n)
         
-        # (3) choose the optimal next move
-        r,c = self.choose_optimal_move(n)
-        #########################################
+        # # (3) choose the optimal next move
+        # r,c = self.choose_optimal_move(n)
+        # #########################################
+        # return r,c
+
+        n = MMNode(s)
+        n.build_tree(g)
+        max_value = -1
+        chosen_c = None
+        for c in n.c:
+            pred = self.model.forward(c)
+            if pred > max_value:
+                max_value = pred
+                chosen_c = c
+        
+        r,c = chosen_c.m
         return r,c
 
     ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test1.py:test_minmax_choose_a_move' in the terminal.  '''

@@ -26,6 +26,17 @@ class LinearRegression(nn.Module):
 
 # -------------------------------------------------------------------------
 
+'''
+file = Path(__file__).parents[0].joinpath('Memory/MM_TicTacToe.p')
+memory = pickle.load(open(file, "rb"))
+state = []
+result = []
+for s, n in memory.items():
+    b = s.b.flatten().tolist()
+    state.append(b.append(s.x))
+    result.append(n.v)
+'''
+
 [w,b] = model.parameters()
 
 def get_parameters():

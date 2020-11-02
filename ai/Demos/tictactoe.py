@@ -159,7 +159,7 @@ def run_a_game(p):
     x = 1 # current turn (x player's turn)
 
     # create game tree if it does not exist, otherwise load it
-    _ = p.choose_a_move(g, s)
+    # _ = p.choose_a_move(g, s)
 
     canPlay = True
     pygame.display.update()
