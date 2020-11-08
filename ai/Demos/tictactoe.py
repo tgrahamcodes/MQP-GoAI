@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from Players.minimax import RandomPlayer, MiniMaxPlayer
 from Players.mcts import MCTSPlayer
+from Players.randomnn import RandomNNPlayer
 from game import TicTacToe 
 
 '''
@@ -240,6 +241,9 @@ if __name__ == "__main__":
         elif arg=="minimax": # player with MiniMax player
             p = MiniMaxPlayer()
             print('Now you are playing with MiniMax Player!')
+        elif arg=="nn": # player with RandomNN player
+            p = RandomNNPlayer()
+            print('Now you are playing with RandomNN Player!')
         else:
             assert False # Incorrect AI name
     else:

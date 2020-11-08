@@ -738,12 +738,6 @@ class GO_state(GameState):
         self.a = a 
         self.t = t 
 
-    def __hash__(self):
-        return hash(str(self.b) + str(self.x) + str(self.p) + str(self.a) + str(self.t))
-
-    def __eq__(self, other):
-        return (str(self.b) + str(self.x) + str(self.p) + str(self.a) + str(self.t) == other)
-
 #-------------------------------------------------------
 class GO(BoardGame):
     '''

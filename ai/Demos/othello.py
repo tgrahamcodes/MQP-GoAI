@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from Players.minimax import RandomPlayer 
 from Players.mcts import MCTSPlayer
+from Players.randomnn import RandomNNPlayer
 from game import Othello 
 
 '''
@@ -245,9 +246,14 @@ def run_a_game(p):
 if __name__ == "__main__":
     if len(sys.argv)>1:
         arg=sys.argv[1]
-        # play with MCTS player
-        p =MCTSPlayer()
-        print('Now you are playing with Monte-Carlo Tree Search Player!')
+        if arg=="mcts": # play with MCTS player
+            p =MCTSPlayer()
+            print('Now you are playing with Monte-Carlo Tree Search Player!')
+        elif arg=="nn": # player with RandomNN player
+            p = RandomNNPlayer()
+            print('Now you are playing with RandomNN Player!')
+        else:
+            assert False # Incorrect AI name
     else:
         p= RandomPlayer() # default: random player
         print('Now you are playing with Random Player!')
