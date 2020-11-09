@@ -4,15 +4,15 @@ import numpy as np
 import torch
 from pathlib import Path
 from .minimax import Node
-from game import Player
+from game import Player, GO, Othello, TicTacToe
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
 class RandomNN(nn.Module):
 
-    def __init__(self):
+    def __init__(self, size_in):
         super().__init__()
-        self.hidden = nn.Linear(10, 5)
+        self.hidden = nn.Linear(size_in, 5)
         self.output = nn.Linear(5, 1)
         self.tanh = nn.Tanh()
 
@@ -51,7 +51,8 @@ class RNNNode(Node):
 class RandomNNPlayer(Player):
 
     def __init__(self):
-        self.model = RandomNN()
+        self.file = None
+        self.model = None
 
     #----------------------------------------------
     def choose_optimal_move(self,n):
@@ -61,8 +62,35 @@ class RandomNNPlayer(Player):
         return r,c
 
     # ----------------------------------------------
-    def choose_a_move(self,g,s):        
+    def choose_a_move(self,g,s):
+        if not self.file:
+            self.file = self.select_file(g)
+            if Path.is_file(self.file):
+                self.model = self.load_model()
+            else:
+                if type(g) == GO:
+                    self.model = RandomNN((g.N**2)+1)
+                elif type(g) == Othello:
+                    self.model = RandomNN((8**2)+1)
+                elif type(g) == TicTacToe:
+                    self.model = RandomNN((3**2)+1)
+
         n = RNNNode(s)
         n.expand_and_predict(g,self)
         r,c = self.choose_optimal_move(n)
         return r,c
+    
+    # ----------------------------------------------
+    def select_file(self, g):
+        if isinstance(g, GO):
+            return Path(__file__).parents[0].joinpath('Memory/RandomNN_' + g.__class__.__name__ + '_' + str(g.N) + 'x' + str(g.N) + '.pt')
+        else:
+            return Path(__file__).parents[0].joinpath('Memory/RandomNN_' + g.__class__.__name__ + '.pt')
+
+    # ----------------------------------------------
+    def export_model(self):
+        torch.save(self.model, self.file)
+
+    # ----------------------------------------------
+    def load_model(self):
+        return torch.load(self.file)

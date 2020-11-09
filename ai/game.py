@@ -225,6 +225,12 @@ class BoardGame(ABC):
             x_player.mem.export_mem()
         if isinstance(o_player, MCTSPlayer) and x_player.mem.file != 'testing':
             o_player.mem.export_mem()
+            
+        from Players.randomnn import RandomNNPlayer
+        if isinstance(x_player, RandomNNPlayer):
+            x_player.export_model()
+        if isinstance(o_player, RandomNNPlayer):
+            o_player.export_model()
         
         return e
 
