@@ -6,53 +6,53 @@ import torch.nn.functional as F
 import torch.nn as nn
 from pathlib import Path
 import numpy as np
+from abc import ABC, abstractmethod
 # -------------------------------------------------------------------------
 class LinearRegression(nn.Module):
 
-    def __init__(self, D_in, H, D_out, x1, y1):
+    def __init__(self):
         super(LinearRegression, self).__init__()
+        self.lr = 1e-4
+        self.epochs = 500
+        self.lin = nn.Linear(10, 1)
 
-        self.lin1 = nn.Linear(D_in, H)
-        self.lin2 = nn.Linear(H, D_out)
+    def forward(self, x):
+        x = torch.Tensor([x])
+        pred = self.lin(x)
+        return pred
 
-        xt = np.array([x1])
-        yt = np.array([y1])
+    def save(self):
+        file = Path(__file__).parents[0].joinpath('Memory/MM_LinearReg.p')
+        return True
 
-        x = torch.from_numpy(xt)
-        y = torch.from_numpy(yt)
+    def load(self):
+        file = open("Memory/MM_LinearReg.p", "r")
+        return file.read()
+        
+    def train(self, x, y, epochs, lr):
 
         # Initializing the loss function
-        loss_fn = nn.MSELoss()
-
-        # Initializing the optimizer
-        lr = 1e-4
-        # opt = torch.optim.SGD(model.parameters(), lr)
-
-        epochs = 500
-        losses=[]
+        loss_fn = torch.nn.MSELoss(reduction='sum')
+        opt = torch.optim.SGD(self.parameters(), lr)
 
         # Actually training the model
         for i in range(epochs):
             # Compute y by passing x to the model
-            y_pred = self.lin2(x.float())
+            y_pred = self.forward(x)
 
             loss = loss_fn(y_pred, y.float())
-            if i % 100 == 99:
-                print(i, loss.item())
+    
+            # Zero the gradients before the backwards pass
+            opt.zero_grad()
 
-        # Zero the gradients before the backwards pass
-        self.lin2.zero_grad()
+            # Compute the loss gradient
+            loss.backward()
 
-        # Compute the loss gradient
-        loss.backward()
+            opt.step()
+            if (i % 100 == 99):
+                print('epoch ', i, 'loss ', loss.item())
 
-        # Update the weights using gradient descent
-        with torch.no_grad():
-            for i in self.lin2.parameters():
-                i += lr * i.grad
-
-    def forward(self, X):
-        h_relu = self.lin1(X).clamp(min=0)
-        pred = self.lin2(h_relu)
-        return pred
+            with torch.no_grad():
+                for param in self.parameters():
+                    param -= lr * param.grad
 # -------------------------------------------------------------------------
