@@ -240,6 +240,9 @@ class TicTacToe(BoardGame):
     '''
         TicTacToe game environment: the goal is to provide a platform for two AI players to play the game in turns and return the game result. 
     '''
+    def __init__(self):
+        super(TicTacToe, self).__init__()
+        self.input_size = (3**2)+1 
 
     # ----------------------------------------------
     def initial_game_state(self):
@@ -409,6 +412,10 @@ class Othello(BoardGame):
     '''
         Othello game engine: the goal is to provide a platform for two AI players to play the game in turns and return the game result. 
     '''
+    def __init__(self):
+        super(Othello, self).__init__()
+        self.input_size = (8**2)+1 
+
     # ----------------------------------------------
     def initial_game_state(self):
         '''
@@ -744,6 +751,12 @@ class GO_state(GameState):
         self.a = a 
         self.t = t 
 
+    def __hash__(self):
+        return hash(str(self.b) + str(self.x) + str(self.p) + str(self.a) + str(self.t))
+
+    def __eq__(self, other):
+        return (str(self.b) + str(self.x) + str(self.p) + str(self.a) + str(self.t) == other)
+
 #-------------------------------------------------------
 class GO(BoardGame):
     '''
@@ -755,6 +768,7 @@ class GO(BoardGame):
             self.M = board_size*board_size*3 # maximum game length
         else:
             self.M = max_game_length
+        self.input_size = (self.N**2)+1
 
     # ----------------------------------------------
     def initial_game_state(self):

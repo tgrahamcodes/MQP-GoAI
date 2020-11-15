@@ -389,7 +389,7 @@ class MCNode(Node):
  
 
     #----------------------------------------------
-    def selection(self):
+    def selection(self, depth=0):
         '''
             Select a leaf node by traveling down the tree from root. Here a leaf node is a node with no child node.
             In each step, choose the child node with the highest UCB score, until reaching a leaf node. 
@@ -438,12 +438,12 @@ class MCNode(Node):
         ## INSERT YOUR CODE HERE
     
         # if the root node is a leaf node (no child), return root node
-        if len(self.c)==0:
+        if len(self.c)==0 or depth>50:
             return self
         # otherwise: select a child node (c) of the root node
         c = self.select_a_child() 
         #            recursively select the children nodes of node (c).
-        l = c.selection()
+        l = c.selection(depth+1)
         #########################################
         return l
 
@@ -657,8 +657,9 @@ class MCNode(Node):
     
         Hint: you could use the functions implemented above to solve this problem using 5 lines of code.
         '''
-        if player is not None:
-            player.mem.fill_mem(self)
+        # if player is not None:
+        #     player.mem.fill_mem(self)
+
         # iterate n_iter times
         for _ in range(n_iter):
             #########################################
@@ -669,7 +670,8 @@ class MCNode(Node):
             #   Step 2: expansion:expand node (L) with one level of children nodes and select one of L's children nodes (C) as the leaf node 
             e = g.check_game(c.s)
             if e is None:
-                c=c.expand(g,player)
+                if not c.c:
+                    c=c.expand(g,player)
             #   Step 3: simulation: sample a game result from the selected leaf node (C) 
                 e =  c.sample(g)
             #   Step 4: back propagation: backprop the result of the simulation 
@@ -782,6 +784,7 @@ class MCTSPlayer(Player):
         if not self.mem.dictionary:
             # create a tree node (n) with the current game state 
             n = MCNode(s)
+            self.mem.fill_mem(n)
             # build a search tree with the tree node (n) as the root and n_iter as the number of simulations
             n.build_tree(g,self.n_iter,self)
 
@@ -790,6 +793,7 @@ class MCTSPlayer(Player):
             # if node is not yet in memory
             if not n:
                 n = MCNode(s)
+                self.mem.fill_mem(n)
             # simulate and update existing nodes
             n.build_tree(g,self.n_iter,self)
 

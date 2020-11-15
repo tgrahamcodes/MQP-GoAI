@@ -1130,12 +1130,11 @@ def test_fill_mem():
     p2 = MCTSPlayer()
     p2.mem.file = 'testing'
     n = MCNode(s)
-    n.build_tree(g,1,p2) # root and children nodes called to fill_mem
+    n.build_tree(g,1,p2)
     mem_n2 = p2.mem.dictionary.get(s, None)
     assert isinstance(p2.mem, MCMemory)
-    assert len(p2.mem.dictionary) == 10
-    assert mem_n2 == n
-    assert mem_n2.N == 1
+    assert len(p2.mem.dictionary) == 9
+    assert n.N == 1
 
     # The AI agent should also be compatible with Othello.
     # now let's test on the game "Othello":
@@ -1206,9 +1205,7 @@ def test_MCTS_memory():
     s1 = GameState(b,x=1) # it's X player's turn
     n = MCNode(s1)
     n.build_tree(g,1,p)
-    mem_n = p.mem.get_node(s1)
-    assert len(p.mem.dictionary) == 10
-    assert n == mem_n
+    assert len(p.mem.dictionary) == 9
     assert n.N == 1
 
     #-------------------------
