@@ -5,10 +5,12 @@ import sys
 # from Players.minimax import MiniMaxPlayer, GameState
 import torch.nn as nn
 import torch
+import math
 from ..Players.linearregression import LinearRegression
 import os.path
 from os import path
 from pathlib import Path
+from torch.autograd import Variable
 #-------------------------------------------------------------------------
 def test_python_version():
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
@@ -17,45 +19,83 @@ def test_python_version():
 #-------------------------------------------------------------------------
 def test_neural_net():  
     # Hardcoded numpy arrays to test model "normalized"
-    x = torch.tensor([.1,.2,.3,.4,.5,.6,.7,.8,.9,.88])
-    y = torch.tensor([.4,.5,.6,.8,.10,.12,.14,.16,.18,.20])
+    x_data = [i for i in range(11)]
+    y_data = [2*i + 1 for i in x_data]
+
+    x_train = np.array(x_data, dtype=np.float32)
+    x_train.shape
+
+    y_train = np.array(y_data, dtype=np.float32)
+    y_train.shape
+
+    x_train = x_train.reshape(-1, 1)
+    x_train.shape
+
+    y_train = y_train.reshape(-1, 1)
+    y_train.shape
+
+    inputs = torch.from_numpy(x_train).requires_grad_()
+    labels = torch.from_numpy(y_train)
 
     # Instatiating the model
-    model = LinearRegression()
-    model.train(x, y, 500, 0.01)
+    model = LinearRegression(1, 1)
+    print(model.train(inputs, labels))
 
-    # TODO find ground truth and compare it to what the model is predicting
+    ground_truth = Variable(torch.Tensor(([12])))
+    pred_y = model(ground_truth)
+    print("predict", 25, int(model(ground_truth).item()))
 
+    assert (int(model(ground_truth).item()) == 25 or int(model(ground_truth).item()) == 24)
     assert (model)
     assert (type(model) == LinearRegression)
+    assert (model.lin.in_features == 1)
+    assert (model.lin.out_features == 1)
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
 def test_data_save():
     # Hardcoded numpy arrays to test model "normalized"
-    x = torch.tensor([.1,.2,.3,.4,.5,.6,.7,.8,.9,.88])
-    y = torch.tensor([.4,.5,.6,.8,.10,.12,.14,.16,.18,.20])
+    x_data = [i for i in range(11)]
+    y_data = [2*i + 1 for i in x_data]
+
+    x_train = np.array(x_data, dtype=np.float32)
+    x_train.shape
+
+    y_train = np.array(y_data, dtype=np.float32)
+    y_train.shape
+
+    x_train = x_train.reshape(-1, 1)
+    x_train.shape
+
+    y_train = y_train.reshape(-1, 1)
+    y_train.shape
+
+    inputs = torch.from_numpy(x_train).requires_grad_()
+    labels = torch.from_numpy(y_train)
 
     # Instatiating the model
-    model = LinearRegression()
-    model.train(x,y, 500, 0.01)
-    model.save()
+    model = LinearRegression(1, 1)  
+    model.save('Players/Memory/MM_LinearReg.p')
+
+    
     assert (model)
     assert (type(model) == LinearRegression)
+    assert (path.exists('Players/Memory/MM_LinearReg.p'))
     assert Path(__file__).parents[1].joinpath('Players/Memory/MM_LinearReg.p')
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
 def test_data_load():
-    # Hardcoded numpy arrays to test model "normalized"
-    x = torch.tensor([.1,.2,.3,.4,.5,.6,.7,.8,.9,.88])
-    y = torch.tensor([.4,.5,.6,.8,.10,.12,.14,.16,.18,.20])
-
     # Instatiating the model
-    model = LinearRegression()
-    model.train(x,y, 500, 1e4)
-    output = model.load()
+    model = LinearRegression(1,1)
+    model.load('Players/Memory/MM_LinearReg.p')
+
+    assert (path.exists('Players/Memory/MM_LinearReg.p'))
+    assert (model.parameters)
+    assert (model.lr == 0.0001)
+    assert (model.epochs == 500)
     assert (model)
     assert (type(model) == LinearRegression)
-    assert (output)
+    assert (model.lin.in_features == 1)
+    assert (model.lin.out_features == 1)
 #-------------------------------------------------------------------------

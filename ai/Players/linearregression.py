@@ -7,36 +7,37 @@ import torch.nn as nn
 from pathlib import Path
 import numpy as np
 from abc import ABC, abstractmethod
+from torch.autograd import Variable
 # -------------------------------------------------------------------------
 class LinearRegression(nn.Module):
 
-    def __init__(self):
+    def __init__(self, input, output):
         super(LinearRegression, self).__init__()
         self.lr = 1e-4
         self.epochs = 500
         self.file = None
-        self.lin = nn.Linear(10, 10)
+        self.lin = nn.Linear(input, output)
 
     def forward(self, x):
         pred = self.lin(x)
         return pred
 
-    def save(self):
-        torch.save(self.lin, 'Players/Memory/MM_LinearReg.p')
-        return True
+    def save(self, file):
+        torch.save(self.lin, file)
 
-    def load(self):
-        torch.load('Players/Memory/MM_LinearReg.p')
-        return True
-        
-    def train(self, x, y, epochs, lr):
+    def load(self, file):
+        torch.load(file)
+
+    def train(self, x, y):
         # Initializing the loss function
+       
         loss_fn = torch.nn.MSELoss(reduction='sum')
-        opt = torch.optim.SGD(self.parameters(), lr)
+        opt = torch.optim.SGD(self.parameters(), self.lr)
 
         # Actually training the model
-        for i in range(epochs):
+        for epoch in range(self.epochs):
             # Compute y by passing x to the model
+
             y_pred = self.forward(x)
 
             loss = loss_fn(y_pred, y)
@@ -48,10 +49,9 @@ class LinearRegression(nn.Module):
             loss.backward()
 
             opt.step()
-            if (i % 100 == 99):
-                print('epoch ', i, 'loss ', loss.item())
+            print('epoch ', epoch, 'loss ', loss.item())
 
             with torch.no_grad():
                 for param in self.parameters():
-                    param -= lr * param.grad
+                    param -= self.lr * param.grad
 # -------------------------------------------------------------------------
