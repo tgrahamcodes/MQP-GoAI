@@ -14,23 +14,22 @@ class LinearRegression(nn.Module):
         super(LinearRegression, self).__init__()
         self.lr = 1e-4
         self.epochs = 500
-        self.lin = nn.Linear(10, 1)
+        self.file = None
+        self.lin = nn.Linear(10, 10)
 
     def forward(self, x):
-        x = torch.Tensor([x])
         pred = self.lin(x)
         return pred
 
     def save(self):
-        file = Path(__file__).parents[0].joinpath('Memory/MM_LinearReg.p')
+        torch.save(self.lin, 'Players/Memory/MM_LinearReg.p')
         return True
 
     def load(self):
-        file = open("Memory/MM_LinearReg.p", "r")
-        return file.read()
+        torch.load('Players/Memory/MM_LinearReg.p')
+        return True
         
     def train(self, x, y, epochs, lr):
-
         # Initializing the loss function
         loss_fn = torch.nn.MSELoss(reduction='sum')
         opt = torch.optim.SGD(self.parameters(), lr)
@@ -40,7 +39,7 @@ class LinearRegression(nn.Module):
             # Compute y by passing x to the model
             y_pred = self.forward(x)
 
-            loss = loss_fn(y_pred, y.float())
+            loss = loss_fn(y_pred, y)
     
             # Zero the gradients before the backwards pass
             opt.zero_grad()
