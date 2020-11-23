@@ -186,19 +186,6 @@ class MCNode(Node):
         # get the list of valid next move-state pairs from the current game state
         p=g.get_move_state_pairs(self.s)
         # expand the node with one level of children nodes 
-        # for each next move m and game state s, create a child node
-        # for m,s in p:
-        #     if player is not None:
-        #         # check if node with same configurations already exists
-        #         if player.mem.get_node(s) != None:
-        #             c = player.mem.get_node(s)
-        #         # if not create a new node and add it to memory 
-        #         else:
-        #             c = MCNode(s,p=self, m=m)
-        #             player.mem.fill_mem(c)
-        #     else:
-        #         c = MCNode(s,p=self, m=m)
-
         for m,s in p:
             # for each next move m and game state s, create a child node
             c = MCNode(s,p=self, m=m)
@@ -657,9 +644,6 @@ class MCNode(Node):
     
         Hint: you could use the functions implemented above to solve this problem using 5 lines of code.
         '''
-        # if player is not None:
-        #     player.mem.fill_mem(self)
-
         # iterate n_iter times
         for _ in range(n_iter):
             #########################################

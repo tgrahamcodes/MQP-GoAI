@@ -143,3 +143,34 @@ def test_load_model():
     assert p.file != None
     assert p.model != None
     assert type(p.model) == RandomNN
+
+#-------------------------------------------------------------------------
+def test_train():
+    '''train'''
+    #---------------------
+    # Game: TicTacToe
+    g = TicTacToe()  # game
+    model = RandomNN(g.input_size) 
+
+    #---------------------
+    b=np.array([[0, 1, 1],
+                [0,-1,-1],
+                [0,-1, 1]])
+    s=GameState(b,x=1) #it's X player's turn
+
+    p=g.get_move_state_pairs(s)
+    states = []
+    for m, s in p:
+        states.append(s)
+    labels = [1, 0, -1]
+
+    # train model
+    model.train(states, labels)
+
+    # print values of forward function
+    print('After training:')
+    for i, s in enumerate(states):
+        tensor = model.forward(s)
+        print('Expected: %d \t Output: %.3f' % (labels[i], float(tensor.detach().numpy()[0,0])))
+        
+    assert False

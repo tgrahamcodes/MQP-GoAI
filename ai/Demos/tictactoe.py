@@ -5,6 +5,7 @@ from pathlib import Path
 from Players.minimax import RandomPlayer, MiniMaxPlayer
 from Players.mcts import MCTSPlayer
 from Players.randomnn import RandomNNPlayer
+from Players.policynn import PolicyNNPlayer
 from game import TicTacToe 
 
 '''
@@ -244,6 +245,9 @@ if __name__ == "__main__":
         elif arg=="nn": # player with RandomNN player
             p = RandomNNPlayer()
             print('Now you are playing with RandomNN Player!')
+        elif arg=="policy": # player with RandomNN player
+            p = PolicyNNPlayer()
+            print('Now you are playing with PolicyNN Player!')
         else:
             assert False # Incorrect AI name
     else:

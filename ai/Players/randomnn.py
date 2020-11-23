@@ -27,6 +27,27 @@ class RandomNN(nn.Module):
         x = self.tanh(x)
         return x
 
+    def train(self, states, labels):
+        loss_fn = nn.MSELoss()
+        optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+
+        for epoch in range(500):
+            running_loss = 0.0
+
+            for i, s in enumerate(states):
+                optimizer.zero_grad()
+                output = self.forward(s)
+                label = np.array([labels[i]])
+                loss = loss_fn(torch.Tensor([label]), output)
+                loss.backward()
+                optimizer.step()
+
+                running_loss += loss.item()
+
+                if i == (len(states)-1):
+                    print('epoch %d: %.3f' % (epoch+1, running_loss/len(states)))
+
+
 #-------------------------------------------------------
 class RandomNNPlayer(Player):
 
