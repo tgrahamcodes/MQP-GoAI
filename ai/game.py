@@ -231,6 +231,12 @@ class BoardGame(ABC):
             x_player.export_model()
         if isinstance(o_player, RandomNNPlayer):
             o_player.export_model()
+
+        from Players.policynn import PolicyNNPlayer
+        if isinstance(x_player, PolicyNNPlayer):
+            x_player.export_model()
+        if isinstance(o_player, PolicyNNPlayer):
+            o_player.export_model()
         
         return e
 

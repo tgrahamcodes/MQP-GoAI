@@ -73,6 +73,12 @@ def test_select_file():
     p3.file = p3.select_file(g3)
     assert p3.file == Path(__file__).parents[1].joinpath('Players/Memory/RandomNN_GO_5x5.pt')
 
+    #---------------------
+    g4 = GO(10)
+    p4 = RandomNNPlayer()
+    p4.file = p4.select_file(g4)
+    assert p4.file == Path(__file__).parents[1].joinpath('Players/Memory/RandomNN_GO_10x10.pt')
+
 #-------------------------------------------------------------------------
 def test_export_model():
     '''export_model'''

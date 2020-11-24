@@ -25,7 +25,7 @@ class PolicyNN(nn.Module):
         x = self.relu(x)
         x = self.adjust_rewards(state, x)
         x = self.softmax(x)
-        print('Probabilities:', list(x.detach().numpy()[0]))
+        print('   Probabilities:', list(x.detach().numpy()[0]))
         return x
 
     def adjust_rewards(self, state, x):
