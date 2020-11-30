@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import os
 from pathlib import Path
+from torch.utils.data import Dataset, DataLoader
 from Players.minimax import RandomPlayer, MiniMaxPlayer, GameState
 from Players.randomnn import *
 from game import Othello, TicTacToe, GO
@@ -149,6 +150,7 @@ def test_load_model():
     assert p.file != None
     assert p.model != None
     assert type(p.model) == RandomNN
+    #TEST IF LOADING WEIGHTS ARE DIFFERENT FROM NEW MODEL WEIGHTS
 
 #-------------------------------------------------------------------------
 def test_train():
@@ -161,22 +163,35 @@ def test_train():
     #---------------------
     b=np.array([[0, 1, 1],
                 [0,-1,-1],
-                [0,-1, 1]])
-    s=GameState(b,x=1) #it's X player's turn
+                [0, 0, 1]])
+    s=GameState(b,x=-1) #it's X player's turn
 
     p=g.get_move_state_pairs(s)
     states = []
     for m, s in p:
-        states.append(s)
-    labels = [1, 0, -1]
+        state = s.b.flatten().tolist()
+        state.append(s.x)
+        states.append(torch.Tensor(state))
+    labels = [torch.Tensor([0]), torch.Tensor([1]), torch.Tensor([-1]), torch.Tensor([-1])]
 
-    # train model
-    model.train(states, labels)
+    class sample_data(Dataset):
+        def __init__(self, states, labels):
+            self.states = states
+            self.labels = labels
+        def __len__(self):
+            return len(self.states) 
+        def __getitem__(self, index):
+            state = self.states[index]
+            label = self.labels[index]
+            return state, label
+    d = sample_data(states, labels)
+    data_loader = DataLoader(d, batch_size=2, shuffle=False, num_workers=0)
+    model.train(data_loader)
 
     # print values of forward function
     print('After training:')
-    for i, s in enumerate(states):
-        tensor = model.forward(s)
-        print('Expected: %d \t Output: %.3f' % (labels[i], float(tensor.detach().numpy()[0,0])))
-        
+    for i in range(len(labels)):
+        outputs = model(states[i])
+        print('Expected: %d \t Output: %.3f' % (labels[i], outputs))
+
     assert False

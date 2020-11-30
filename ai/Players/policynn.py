@@ -17,27 +17,45 @@ class PolicyNN(nn.Module):
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax()
 
-    def forward(self, s):
-        state = s.b.flatten().tolist()
-        state.append(s.x)
-        x = torch.Tensor([state])
-        x = self.output(x)
+    def forward(self, states):
+        x = self.output(states)
         x = self.relu(x)
-        x = self.adjust_rewards(state, x)
+        self.adjust_rewards(states, x)
         x = self.softmax(x)
-        print('   Probabilities:', list(x.detach().numpy()[0]))
+        # tmp = x.clone()
+        # print('   Probabilities:', [list(obj.detach().numpy()) for obj in tmp])
         return x
 
-    def adjust_rewards(self, state, x):
-        # remove appended player's turn
-        state.pop()
-        # -1000 reward if move is invalid
-        valid_moves = [-1000*abs(m) for m in state]
-        current = x.detach().numpy()[0]
-        adjusted = current + valid_moves
-        print('Adjusted rewards:', list(adjusted))
-        adjusted = torch.Tensor([adjusted])
-        return adjusted
+    def adjust_rewards(self, states, x):
+        for i, state in enumerate(states):
+            # remove appended player's turn
+            state = state[:-1]
+            # -1000 reward if move is invalid
+            valid_moves = torch.Tensor([-1000*abs(m) for m in state])
+            current = x[i]
+            x[i] = torch.add(current, valid_moves)
+            # tmp = x[i].clone()
+            # print('Adjusted rewards:', list(tmp.detach().numpy()))
+
+    def train(self, data_loader):
+        loss_fn = nn.BCELoss()
+        optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+
+        for epoch in range(500):
+            running_loss = 0.0
+
+            for i, mini_batch in enumerate(data_loader):
+                states, labels = mini_batch
+                optimizer.zero_grad()
+                outputs = self(states)
+                loss = loss_fn(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                running_loss += loss.item()
+
+                if i == (len(data_loader)-1):
+                    print('epoch %d: %.3f' % (epoch+1, running_loss/len(data_loader)))
 
 
 #-------------------------------------------------------
@@ -52,7 +70,7 @@ class PolicyNNPlayer(Player):
         if not self.file:
             self.load_model(g)
 
-        tensor = self.model.forward(s)
+        tensor = self.model(s)
         p = tensor.detach().numpy()[0]
         idx = np.argmax(p)
         r = int(idx // (sqrt((g.input_size-1))))

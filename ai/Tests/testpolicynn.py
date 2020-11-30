@@ -3,6 +3,7 @@ import sys
 import os
 import torch
 from pathlib import Path
+from torch.utils.data import Dataset, DataLoader
 from Players.minimax import RandomPlayer, MiniMaxPlayer, GameState
 from Players.policynn import *
 from game import Othello, TicTacToe, GO
@@ -197,3 +198,52 @@ def test_load_model():
     # assert p.file != None
     # assert p.model != None
     # assert type(p.model) == PolicyNN
+
+#-------------------------------------------------------------------------
+def test_train():
+    '''train'''
+    #---------------------
+    # Game: TicTacToe
+    g = TicTacToe()  # game
+    model = PolicyNN(g.input_size) 
+
+    #---------------------
+    b=np.array([[0, 1, 1],
+                [0,-1,-1],
+                [0, 0, 1]])
+    s=GameState(b,x=-1) #it's X player's turn
+
+    p=g.get_move_state_pairs(s)
+    states = []
+    for m, s in p:
+        state = s.b.flatten().tolist()
+        state.append(s.x)
+        states.append(torch.Tensor(state))
+    labels = []
+    labels.append(torch.Tensor([0,0,0,0.33,0,0,0.33,0.33,0]))
+    labels.append(torch.Tensor([0.33,0,0,0,0,0,0.33,0.33,0]))
+    labels.append(torch.Tensor([0.8,0,0,0.1,0,0,0,0.1,0]))
+    labels.append(torch.Tensor([0.8,0,0,0.1,0,0,0.1,0,0]))
+
+    class sample_data(Dataset):
+        def __init__(self, states, labels):
+            self.states = states
+            self.labels = labels
+        def __len__(self):
+            return len(self.states) 
+        def __getitem__(self, index):
+            state = self.states[index]
+            label = self.labels[index]
+            return state, label
+    d = sample_data(states, labels)
+    data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
+    model.train(data_loader)
+
+    # print values of forward function
+    print('After training:')
+    for states, labels in data_loader:
+        outputs = model(states)
+        print('Expected: ', [list(obj.detach().numpy()) for obj in labels])
+        print('Output: ', [list(obj.detach().numpy()) for obj in outputs])
+
+    assert False
