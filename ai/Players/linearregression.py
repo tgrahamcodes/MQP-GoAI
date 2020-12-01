@@ -23,10 +23,11 @@ class LinearRegression(nn.Module):
         return pred
 
     def save(self, file):
-        torch.save(self.lin, file)
+        torch.save(self.lin.state_dict(), file)
 
     def load(self, file):
-        torch.load(file)
+        self.lin.load_state_dict(torch.load(file))
+        self.lin.eval()
 
     def train(self, x, y):
         # Initializing the loss function

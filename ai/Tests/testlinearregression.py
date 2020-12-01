@@ -16,7 +16,6 @@ def test_python_version():
 
 #-------------------------------------------------------------------------
 def test_neural_net():  
-    # Hardcoded numpy arrays to test model "normalized"
     x_data = [i for i in range(11)]
     y_data = [2*i + 1 for i in x_data]
 
@@ -42,10 +41,17 @@ def test_neural_net():
     ground_truth = Variable(torch.Tensor(([12])))
     pred_y = model(ground_truth)
     print("predict", 25, int(model(ground_truth).item()))
+    
+    # Asserting that the prediction is correct
+    assert (math.isclose(25, model(ground_truth).item(), abs_tol=1.5))
 
-    assert (int(model(ground_truth).item()) == 25 or int(model(ground_truth).item()) == 24)
-    assert (model)
+    # Asserting the model is non null
+    assert (model and model.lin)
+
+    # Asserting the type of the model is correct
     assert (type(model) == LinearRegression)
+
+    # Asserting the in and out features are correct
     assert (model.lin.in_features == 1)
     assert (model.lin.out_features == 1)
 #-------------------------------------------------------------------------
@@ -75,8 +81,13 @@ def test_data_save():
     model.file = 'Players/Memory/MM_LinearReg.p'
     model.save('Players/Memory/MM_LinearReg.p')
 
-    assert (model)
+    # Asserting the model is non null
+    assert (model and model.lin)
+
+    # Asserting the type of the model is correct
     assert (type(model) == LinearRegression)
+
+    # Asserting the path is correct for the file to be saved
     assert (path.exists('Players/Memory/MM_LinearReg.p'))
     assert Path(__file__).parents[1].joinpath('Players/Memory/MM_LinearReg.p')
 #-------------------------------------------------------------------------
@@ -88,6 +99,9 @@ def test_data_load():
     model.load('Players/Memory/MM_LinearReg.p')
     model.file = 'Players/Memory/MM_LinearReg.p'
     assert (path.exists('Players/Memory/MM_LinearReg.p'))
+    assert (model.lin.state_dict)
+    assert (model.lin.weight.data)
+    assert (model.lin.bias)
     assert (model.parameters)
     assert (model.lr == 0.0001)
     assert (model.epochs == 500)
@@ -111,19 +125,38 @@ def test_data_save_and_load():
     inputs = torch.from_numpy(x_train).requires_grad_()
     labels = torch.from_numpy(y_train)
 
-    # Instatiating the model
-    model = LinearRegression(1, 1)  
+    # Instatiating the model and saving it
+    model = LinearRegression(1, 1)
     model.file =  'Players/Memory/MM_LinearReg.p'
     model.save('Players/Memory/MM_LinearReg.p')
 
+    # Loading the model that was saved
     newModel = LinearRegression(1,1)
     newModel.file = 'Players/Memory/MM_LinearReg.p'
     newModel.load('Players/Memory/MM_LinearReg.p')
+
+    newerModel = LinearRegression(2,2)
+    newerModel.lin.weight = torch.nn.Parameter(torch.Tensor(4))
+    newerModel.save('Players/Memory/MM_LinearReg2.p')
     
-    assert (model)
-    assert (newModel)
+    print("Model's state_dict:")
+    for param_tensor in newerModel.lin.state_dict():
+        print(param_tensor, "\t", newerModel.lin.state_dict()[param_tensor].size())
+
+    # Asserting the model has the same features as the loaded model
+    assert (model.lin.weight.data == newModel.lin.weight.data)
+    assert (model.lin.bias.data == newModel.lin.bias.data)
+    assert (model.lin.state_dict.__dict__ == newModel.lin.state_dict.__dict__)
+    # assert (newerModel.lin.state_dict()["weight"])
+    # Asserting the objects are not null
+    assert (model and model.lin)
+    assert (newModel and newModel.lin)
+
+    # Asserting the type of the object is correct
     assert (type(newModel) == LinearRegression)
     assert (type(model) == LinearRegression)
+
+    # Asserting the path exists for the Memory file
     assert (path.exists('Players/Memory/MM_LinearReg.p'))
     assert Path(__file__).parents[1].joinpath('Players/Memory/MM_LinearReg.p')
 #-------------------------------------------------------------------------
