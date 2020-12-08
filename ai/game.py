@@ -226,17 +226,17 @@ class BoardGame(ABC):
         if isinstance(o_player, MCTSPlayer) and x_player.mem.file != 'testing':
             o_player.mem.export_mem()
             
-        from Players.randomnn import RandomNNPlayer
-        if isinstance(x_player, RandomNNPlayer):
-            x_player.export_model()
-        if isinstance(o_player, RandomNNPlayer):
-            o_player.export_model()
+        from Players.qfcnn import QFcnnPlayer
+        if isinstance(x_player, QFcnnPlayer):
+            x_player.model.save_model(x_player.file)
+        if isinstance(o_player, QFcnnPlayer):
+            o_player.model.save_model(o_player.file)
 
         from Players.policynn import PolicyNNPlayer
         if isinstance(x_player, PolicyNNPlayer):
-            x_player.export_model()
+            x_player.model.save_model(x_player.file)
         if isinstance(o_player, PolicyNNPlayer):
-            o_player.export_model()
+            o_player.model.save_model(o_player.file)
         
         return e
 
@@ -248,7 +248,8 @@ class TicTacToe(BoardGame):
     '''
     def __init__(self):
         super(TicTacToe, self).__init__()
-        self.input_size = (3**2)+1 
+        self.input_size = (3**2)+1
+        self.out_size = self.input_size-1
 
     # ----------------------------------------------
     def initial_game_state(self):
@@ -420,7 +421,8 @@ class Othello(BoardGame):
     '''
     def __init__(self):
         super(Othello, self).__init__()
-        self.input_size = (8**2)+1 
+        self.input_size = (8**2)+1
+        self.out_size = self.input_size-1
 
     # ----------------------------------------------
     def initial_game_state(self):
@@ -774,7 +776,8 @@ class GO(BoardGame):
             self.M = board_size*board_size*3 # maximum game length
         else:
             self.M = max_game_length
-        self.input_size = (self.N**2)+1
+        self.input_size = (self.N**2)+4
+        self.out_size = self.input_size-4
 
     # ----------------------------------------------
     def initial_game_state(self):

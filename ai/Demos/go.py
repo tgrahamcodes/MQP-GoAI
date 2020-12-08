@@ -4,7 +4,8 @@ import sys
 from pathlib import Path
 from Players.minimax import RandomPlayer 
 from Players.mcts import MCTSPlayer
-from Players.randomnn import RandomNNPlayer
+from Players.qfcnn import QFcnnPlayer
+from Players.policynn import PolicyNNPlayer
 from game import GO 
 
 '''
@@ -271,9 +272,12 @@ if __name__ == "__main__":
         if arg=="mcts": # play with MCTS player
             p =MCTSPlayer(n_iter = 300)
             print('Now you are playing with Monte-Carlo Tree Search Player!')
-        elif arg=="nn": # player with RandomNN player
-            p = RandomNNPlayer()
-            print('Now you are playing with RandomNN Player!')
+        elif arg=="qfcnn": # player with QFcnn player
+            p = QFcnnPlayer()
+            print('Now you are playing with QFcnn Player!')
+        elif arg=="policy": # player with PolicyNN player
+            p = PolicyNNPlayer()
+            print('Now you are playing with PolicyNN Player!')
         else:
             assert False # Incorrect AI name
     else:

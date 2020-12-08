@@ -4,32 +4,30 @@ import numpy as np
 import torch
 from pathlib import Path
 from .minimax import Node
-from .qnet import QNet
+from .neuralnet import NeuralNet
 from game import Player, GO, Othello, TicTacToe
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
-class RandomNN(nn.Module, QNet):
+class QFcnn(NeuralNet):
 
     def __init__(self, size_in):
         super().__init__()
         self.hidden = nn.Linear(size_in, size_in)
         self.output = nn.Linear(size_in, 1)
         self.relu = nn.ReLU()
-        self.tanh = nn.Tanh()
 
     def forward(self, states):
         x = self.hidden(states)
         x = self.relu(x)
         x = self.output(x)
-        x = self.tanh(x)
         return x
 
-    def train(self, data_loader):
+    def train(self, data_loader, epochs=500):
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
-        for epoch in range(500):
+        for epoch in range(epochs):
             running_loss = 0.0
 
             for i, mini_batch in enumerate(data_loader):
@@ -45,9 +43,8 @@ class RandomNN(nn.Module, QNet):
                 if i == (len(data_loader)-1):
                     print('epoch %d: %.3f' % (epoch+1, running_loss/len(data_loader)))
 
-
 #-------------------------------------------------------
-class RandomNNPlayer(Player):
+class QFcnnPlayer(Player):
 
     def __init__(self):
         self.file = None
@@ -56,16 +53,23 @@ class RandomNNPlayer(Player):
     # ----------------------------------------------
     def choose_a_move(self,g,s):
         if not self.file:
-            self.load_model(g)
+            self.load(g)
         
         v = []
         c = []
         p=g.get_move_state_pairs(s)
         # expand the node with one level of children nodes 
         for m, s in p:
+            state = s.b.flatten().tolist()
+            state.append(s.x)
+            if isinstance(g, GO):
+                state.append(0 if s.p == None else len(s.p))
+                state.append(s.a)
+                state.append(s.t)
+            s = torch.Tensor(state)
             # for each next move m, predict and append result
             tensor = self.model(s)
-            v.append(float(tensor.detach().numpy()[0,0]))
+            v.append(float(tensor.detach().numpy()))
             c.append(m)
         # get index of max predicted value and return move
         idx = np.argmax(np.array(v))
@@ -75,18 +79,13 @@ class RandomNNPlayer(Player):
     # ----------------------------------------------
     def select_file(self, g):
         if isinstance(g, GO):
-            return Path(__file__).parents[0].joinpath('Memory/RandomNN_' + g.__class__.__name__ + '_' + str(g.N) + 'x' + str(g.N) + '.pt')
+            return Path(__file__).parents[0].joinpath('Memory/QFcnn_' + g.__class__.__name__ + '_' + str(g.N) + 'x' + str(g.N) + '.pt')
         else:
-            return Path(__file__).parents[0].joinpath('Memory/RandomNN_' + g.__class__.__name__ + '.pt')
+            return Path(__file__).parents[0].joinpath('Memory/QFcnn_' + g.__class__.__name__ + '.pt')
 
     # ----------------------------------------------
-    def export_model(self):
-        torch.save(self.model, self.file)
-
-    # ----------------------------------------------
-    def load_model(self, g):
+    def load(self, g):
         self.file = self.select_file(g)
+        self.model = QFcnn(g.input_size)
         if Path.is_file(self.file):
-            self.model = torch.load(self.file)
-        else:
-            self.model = RandomNN(g.input_size)
+            self.model.load_model(self.file)

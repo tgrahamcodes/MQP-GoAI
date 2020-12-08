@@ -1,21 +1,10 @@
 #-------------------------------------------------------------------------
 from abc import ABC, abstractmethod
+from .neuralnet import NeuralNet
 
 #-------------------------------------------------------------------------
-class PNet(ABC):
+class PNet(NeuralNet):
 
     @abstractmethod
-    def __init__(self, size_in):
-        pass
-
-    @abstractmethod
-    def forward(self, states):
-        pass
-
-    @abstractmethod
-    def train(self, data_loader):
-        pass
-
-    @abstractmethod
-    def adjust_rewards(self, states, x):
+    def adjust_logit(self, states, x):
         pass

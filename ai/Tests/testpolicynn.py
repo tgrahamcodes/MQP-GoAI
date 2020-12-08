@@ -14,12 +14,12 @@ def test_python_version():
     assert sys.version_info[0] == 3 # require python 3 (instead of python 2)
 
 #-------------------------------------------------------------------------
-def test_adjust_rewards():
+def test_adjust_logit():
     '''adjust_rewards'''
     #---------------------    
     g = TicTacToe()
-    model = PolicyNN(g.input_size)
-    x = torch.Tensor(np.zeros((9)))
+    model = PolicyNN(g.input_size, g.out_size)
+    x = torch.Tensor([np.zeros((9))])
 
     #---------------------
     b=np.array([[0, 0, 0],
@@ -28,24 +28,27 @@ def test_adjust_rewards():
     s=GameState(b,x=1) #it's X player's turn
     state = s.b.flatten().tolist()
     state.append(s.x)
-    adjusted = model.adjust_rewards(state, x)
-    adjusted = adjusted.detach().numpy()[0]
+    s = torch.Tensor([state])
+    model.adjust_logit(s, x)
+    adjusted = x.detach().numpy()[0]
     assert np.allclose(adjusted, np.zeros((9)))
 
     #---------------------
+    x = torch.Tensor([np.zeros((9))])
     b=np.array([[0, 1,-1],
                 [0,-1, 1],
                 [0, 1,-1]])
     s=GameState(b,x=1) #it's X player's turn
     state = s.b.flatten().tolist()
     state.append(s.x)
-    adjusted = model.adjust_rewards(state, x)
-    adjusted = adjusted.detach().numpy()[0]
+    s = torch.Tensor([state])
+    model.adjust_logit(s, x)
+    adjusted = x.detach().numpy()[0]
     assert np.allclose(adjusted, np.array([0, -1000, -1000, 0, -1000, -1000, 0, -1000, -1000]))
 
     #---------------------
     g = Othello()
-    x = torch.Tensor(np.zeros((g.input_size-1)))
+    x = torch.Tensor([np.zeros((g.input_size-1))])
     b=np.array([[ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -57,8 +60,9 @@ def test_adjust_rewards():
     s = GameState(b,x=1)
     state = s.b.flatten().tolist()
     state.append(s.x)
-    adjusted = model.adjust_rewards(state, x)
-    adjusted = adjusted.detach().numpy()[0]
+    s = torch.Tensor([state])
+    model.adjust_logit(s, x)
+    adjusted = x.detach().numpy()[0]
     assert np.allclose(adjusted, np.zeros((g.input_size-1)))
 
 #-------------------------------------------------------------------------
@@ -77,7 +81,7 @@ def test_choose_a_move():
                 [0, 0, 0]])
     s=GameState(b,x=1) #it's X player's turn
     r,c = p.choose_a_move(g,s)
-    p.model = PolicyNN(g.input_size)
+    p.model = PolicyNN(g.input_size, g.out_size)
     assert p.file == Path(__file__).parents[1].joinpath('Players/Memory/PolicyNN_TicTacToe.pt')
     assert type(p.model) == PolicyNN
     assert r in {0,1,2}
@@ -93,7 +97,7 @@ def test_choose_a_move():
     m1 = 0
     m2 = 0
     for _ in range(100):
-        p.model = PolicyNN(g.input_size)
+        p.model = PolicyNN(g.input_size, g.out_size)
         r,c = p.choose_a_move(g,s)
         if (r,c) == (0,0): m0 += 1
         if (r,c) == (1,0): m1 += 1
@@ -170,34 +174,34 @@ def test_export_model():
     # assert Path.is_file(p3.file)
 
 #-------------------------------------------------------------------------
-def test_load_model():
-    '''load_model'''
+def test_load():
+    '''load'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game
     p = PolicyNNPlayer()
-    p.load_model(g)
+    p.load(g)
     assert p.file != None
     assert p.model != None
     assert type(p.model) == PolicyNN
 
-    # #---------------------
-    # # Game: Othello
-    # g = Othello()  # game
-    # p = PolicyNNPlayer()
-    # p.load_model(g)
-    # assert p.file != None
-    # assert p.model != None
-    # assert type(p.model) == PolicyNN
+    #---------------------
+    # Game: Othello
+    g = Othello()  # game
+    p = PolicyNNPlayer()
+    p.load(g)
+    assert p.file != None
+    assert p.model != None
+    assert type(p.model) == PolicyNN
 
-    # #---------------------
-    # # Game: Go
-    # g = GO(5)  # game
-    # p = PolicyNNPlayer()
-    # p.load_model(g)
-    # assert p.file != None
-    # assert p.model != None
-    # assert type(p.model) == PolicyNN
+    #---------------------
+    # Game: Go
+    g = GO(5)  # game
+    p = PolicyNNPlayer()
+    p.load(g)
+    assert p.file != None
+    assert p.model != None
+    assert type(p.model) == PolicyNN
 
 #-------------------------------------------------------------------------
 def test_train():
@@ -205,7 +209,7 @@ def test_train():
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game
-    model = PolicyNN(g.input_size) 
+    model = PolicyNN(g.input_size, g.out_size) 
 
     #---------------------
     b=np.array([[0, 1, 1],
@@ -220,10 +224,10 @@ def test_train():
         state.append(s.x)
         states.append(torch.Tensor(state))
     labels = []
-    labels.append(torch.Tensor([0,0,0,0.33,0,0,0.33,0.33,0]))
-    labels.append(torch.Tensor([0.33,0,0,0,0,0,0.33,0.33,0]))
-    labels.append(torch.Tensor([0.8,0,0,0.1,0,0,0,0.1,0]))
-    labels.append(torch.Tensor([0.8,0,0,0.1,0,0,0.1,0,0]))
+    labels.append(3)
+    labels.append(0)
+    labels.append(0)
+    labels.append(0)
 
     class sample_data(Dataset):
         def __init__(self, states, labels):
@@ -243,7 +247,8 @@ def test_train():
     print('After training:')
     for states, labels in data_loader:
         outputs = model(states)
-        print('Expected: ', [list(obj.detach().numpy()) for obj in labels])
+        # print(outputs)
+        print('Expected: ', [obj.item() for obj in labels])
         print('Output: ', [list(obj.detach().numpy()) for obj in outputs])
 
     assert False

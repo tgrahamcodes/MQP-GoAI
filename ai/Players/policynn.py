@@ -4,44 +4,53 @@ import numpy as np
 import torch
 from math import sqrt
 from pathlib import Path
-from .minimax import Node
-from game import Player, GO, Othello, TicTacToe
+from .pnet import PNet
+from .minimax import Node, GameState
+from game import Player, GO, GO_state, Othello, TicTacToe
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
-class PolicyNN(nn.Module):
+class PolicyNN(PNet):
 
-    def __init__(self, size_in):
+    def __init__(self, size_in, size_out):
         super().__init__()
-        self.output = nn.Linear(size_in, size_in-1)
-        self.relu = nn.ReLU()
-        self.softmax = nn.Softmax()
+        self.size_in = size_in
+        self.size_out = size_out
+        self.output = nn.Linear(size_in, size_out)
 
     def forward(self, states):
         x = self.output(states)
-        x = self.relu(x)
-        self.adjust_rewards(states, x)
-        x = self.softmax(x)
-        # tmp = x.clone()
-        # print('   Probabilities:', [list(obj.detach().numpy()) for obj in tmp])
+        self.adjust_logit(states, x)
         return x
 
-    def adjust_rewards(self, states, x):
+    def adjust_logit(self, states, x):
         for i, state in enumerate(states):
+            # m,s = self.get_valid_moves(state, g)
             # remove appended player's turn
-            state = state[:-1]
+            state = state[:(self.size_out-self.size_in)]
             # -1000 reward if move is invalid
             valid_moves = torch.Tensor([-1000*abs(m) for m in state])
             current = x[i]
             x[i] = torch.add(current, valid_moves)
-            # tmp = x[i].clone()
-            # print('Adjusted rewards:', list(tmp.detach().numpy()))
 
-    def train(self, data_loader):
-        loss_fn = nn.BCELoss()
+    # def get_valid_moves(self, state, g):
+    #     state_copy = state
+    #     state_copy = state_copy.detach().numpy()
+    #     state_info = state_copy[(self.size_out-self.size_in):].copy()
+    #     dim = int(sqrt(g.out_size))
+    #     board = np.reshape(state_copy[:(self.size_out-self.size_in)], (dim, dim))
+    #     if len(state_info) == 4:
+    #         p = None 
+    #         p=g.get_move_state_pairs(GO_state(board, state_info[0], p, state_info[2], state_info[3]))
+    #     else:
+    #         p=g.get_move_state_pairs(GameState(board, state_info[0]))
+    #     return p[0],p[1]
+
+    def train(self, data_loader, epochs=500):
+        loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
-        for epoch in range(500):
+        for epoch in range(epochs):
             running_loss = 0.0
 
             for i, mini_batch in enumerate(data_loader):
@@ -68,13 +77,25 @@ class PolicyNNPlayer(Player):
     # ----------------------------------------------
     def choose_a_move(self,g,s):
         if not self.file:
-            self.load_model(g)
+            self.load(g)
 
+        state = s.b.flatten().tolist()
+        state.append(s.x)
+        if isinstance(g, GO):
+            state.append(0 if s.p == None else len(s.p))
+            state.append(s.a)
+            state.append(s.t)
+        s = torch.Tensor([state])
         tensor = self.model(s)
         p = tensor.detach().numpy()[0]
         idx = np.argmax(p)
-        r = int(idx // (sqrt((g.input_size-1))))
-        c = int(idx % (sqrt((g.input_size-1))))
+        if isinstance(g, GO):
+            r = int(idx // g.N)
+            c = int(idx % g.N)
+        else:
+            r = int(idx // (sqrt((g.out_size))))
+            c = int(idx % (sqrt((g.out_size))))
+        print(r, c)
         return r,c
     
     # ----------------------------------------------
@@ -85,13 +106,8 @@ class PolicyNNPlayer(Player):
             return Path(__file__).parents[0].joinpath('Memory/PolicyNN_' + g.__class__.__name__ + '.pt')
 
     # ----------------------------------------------
-    def export_model(self):
-        torch.save(self.model, self.file)
-
-    # ----------------------------------------------
-    def load_model(self, g):
+    def load(self, g):
         self.file = self.select_file(g)
+        self.model = PolicyNN(g.input_size, g.out_size)
         if Path.is_file(self.file):
-            self.model = torch.load(self.file)
-        else:
-            self.model = PolicyNN(g.input_size)
+            self.model.load_model(self.file)
