@@ -209,25 +209,34 @@ def test_train():
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game
-    model = PolicyNN(g.input_size, g.out_size) 
+    model = PolicyNN(g.channels, g.N, g.output_size) 
 
     #---------------------
-    b=np.array([[0, 1, 1],
-                [0,-1,-1],
-                [0, 0, 1]])
-    s=GameState(b,x=-1) #it's X player's turn
+    # [ 0, 1, 1]
+    # [ 0,-1,-1]
+    # [ 0, 0, 1]
+    # x = -1
+    player1 = np.array([0, 0, 0, 0, 1, 1, 0, 0, 0]).reshape(3,3)
+    opponent1 = np.array([0, 1, 1, 0, 0, 0, 0, 0, 1]).reshape(3,3)
+    empty1 = np.array([1, 0, 0, 1, 0, 0, 1, 1, 0]).reshape(3,3)
 
-    p=g.get_move_state_pairs(s)
-    states = []
-    for m, s in p:
-        state = s.b.flatten().tolist()
-        state.append(s.x)
-        states.append(torch.Tensor(state))
-    labels = []
-    labels.append(3)
-    labels.append(0)
-    labels.append(0)
-    labels.append(0)
+    # [-1, 1, 1]
+    # [ 0,-1,-1]
+    # [ 0, 0, 1]
+    # x = 1
+    player2 = np.array([0, 1, 1, 0, 0, 0, 0, 0, 1]).reshape(3,3)
+    opponent2 = np.array([1, 0, 0, 0, 1, 1, 0, 0, 0]).reshape(3,3)
+    empty2 = np.array([0, 0, 0, 1, 0, 0, 1, 1, 0]).reshape(3,3)
+
+    states = torch.Tensor([
+        [player1,
+        opponent1,
+        empty1],
+        [player2,
+        opponent2,
+        empty2],
+    ])
+    labels = [3, 3]
 
     class sample_data(Dataset):
         def __init__(self, states, labels):
@@ -240,15 +249,14 @@ def test_train():
             label = self.labels[index]
             return state, label
     d = sample_data(states, labels)
-    data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
+    data_loader = DataLoader(d, batch_size=2, shuffle=False, num_workers=0)
     model.train(data_loader)
 
     # print values of forward function
     print('After training:')
     for states, labels in data_loader:
         outputs = model(states)
-        # print(outputs)
         print('Expected: ', [obj.item() for obj in labels])
         print('Output: ', [list(obj.detach().numpy()) for obj in outputs])
-
+    
     assert False

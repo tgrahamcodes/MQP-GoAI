@@ -44,6 +44,16 @@ class BoardGame(ABC):
 
     # ----------------------------------------------
     @abstractmethod
+    def convert_index(self, idx):
+        '''
+           Convert a BoardGame index to row and column for the given game.  
+            Return:
+                r, c: Row, column for the given index.
+        '''
+        pass
+
+    # ----------------------------------------------
+    @abstractmethod
     def initial_game_state(self):
         '''
            Create an initial game state.  
@@ -51,7 +61,6 @@ class BoardGame(ABC):
                 s: the initial state of the game, which is an object of a subclass of GameState.
         '''
         pass
-
 
     # ----------------------------------------------
     @abstractmethod
@@ -248,8 +257,20 @@ class TicTacToe(BoardGame):
     '''
     def __init__(self):
         super(TicTacToe, self).__init__()
-        self.input_size = (3**2)+1
-        self.out_size = self.input_size-1
+        self.N = 3
+        self.output_size = self.N**2
+        self.channels = 3
+
+    # ----------------------------------------------
+    def convert_index(self, idx):
+        '''
+           Convert a BoardGame index to row and column for the given game.  
+            Return:
+                r, c: Row, column for the given index.
+        '''
+        r = int(idx // self.N)
+        c = int(idx % self.N)
+        return r,c
 
     # ----------------------------------------------
     def initial_game_state(self):
@@ -421,8 +442,20 @@ class Othello(BoardGame):
     '''
     def __init__(self):
         super(Othello, self).__init__()
-        self.input_size = (8**2)+1
-        self.out_size = self.input_size-1
+        self.N = 8
+        self.output_size = self.N**2
+        self.channels = 3
+
+    # ----------------------------------------------
+    def convert_index(self, idx):
+        '''
+           Convert a BoardGame index to row and column for the given game.  
+            Return:
+                r, c: Row, column for the given index.
+        '''
+        r = int(idx // self.N)
+        c = int(idx % self.N)
+        return r,c
 
     # ----------------------------------------------
     def initial_game_state(self):
@@ -776,8 +809,19 @@ class GO(BoardGame):
             self.M = board_size*board_size*3 # maximum game length
         else:
             self.M = max_game_length
-        self.input_size = (self.N**2)+4
-        self.out_size = self.input_size-4
+        self.output_size = self.N**2
+        self.channels = 4
+
+    # ----------------------------------------------
+    def convert_index(self, idx):
+        '''
+           Convert a BoardGame index to row and column for the given game.  
+            Return:
+                r, c: Row, column for the given index.
+        '''
+        r = int(idx // self.N)
+        c = int(idx % self.N)
+        return r,c
 
     # ----------------------------------------------
     def initial_game_state(self):
