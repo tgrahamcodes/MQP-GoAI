@@ -6,6 +6,7 @@ from Players.minimax import RandomPlayer
 from Players.mcts import MCTSPlayer
 from Players.qfcnn import QFcnnPlayer
 from Players.policynn import PolicyNNPlayer
+from Players.valuenn import ValueNNPlayer
 from game import Othello 
 
 '''
