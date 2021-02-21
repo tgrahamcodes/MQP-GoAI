@@ -237,26 +237,99 @@ def test_train():
         empty2],
     ])
     labels = [3, 3]
+    rewards = [1, 0]
 
     class sample_data(Dataset):
-        def __init__(self, states, labels):
+        def __init__(self, states, labels, rewards):
             self.states = states
             self.labels = labels
+            self.rewards = rewards
         def __len__(self):
             return len(self.states) 
         def __getitem__(self, index):
             state = self.states[index]
             label = self.labels[index]
-            return state, label
-    d = sample_data(states, labels)
+            reward = self.rewards[index]
+            return state, label, reward
+    d = sample_data(states, labels, rewards)
     data_loader = DataLoader(d, batch_size=2, shuffle=False, num_workers=0)
     model.train(data_loader)
 
     # print values of forward function
     print('After training:')
-    for states, labels in data_loader:
-        outputs = model(states)
-        print('Expected: ', [obj.item() for obj in labels])
-        print('Output: ', [list(obj.detach().numpy()) for obj in outputs])
+    for states, labels, rewards in data_loader:
+        z = model(states)
+        a = nn.functional.softmax(z)
+        print('Label: ', [obj.item() for obj in labels], '  Reward: ', [obj.item() for obj in rewards])
+        print('Output: ', [list(obj.detach().numpy()) for obj in a])
     
+    assert False
+
+#-------------------------------------------------------------------------
+def test_reinforce():
+    '''reinforce'''
+    #---------------------
+    # Game: TicTacToe
+    g = TicTacToe()  # game
+    p1 = PolicyNNPlayer()
+    p2 = PolicyNNPlayer()
+
+    #---------------------
+    class sample_data(Dataset):
+        def __init__(self, states, labels, rewards):
+            self.states = states
+            self.labels = labels
+            self.rewards = rewards
+        def __len__(self):
+            return len(self.states) 
+        def __getitem__(self, index):
+            state = self.states[index]
+            label = self.labels[index]
+            reward = self.rewards[index]
+            return state, label, reward
+
+    dirs = Path(__file__).parents[0].joinpath('Versions/')
+    if not Path.exists(dirs):
+        dirs.mkdir(parents=True, exist_ok=True)
+
+    decay = 0.99
+    matches = 100
+    for i in range(matches):
+        if i == 0:
+            load_f = None
+        else:
+            load_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i-1) + '.pt')
+        p1.load(g, load_f)
+        save_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i) + '.pt')
+        p1.set_file(save_f)
+        e, moves = g.run_game_reinforcement(p1, p2)
+        for s, r, c in moves:
+            states = p1.extract_states(g, s)
+            idx = r*g.N + c
+            if e != 0:
+                value = e * (decay**len(moves))
+            else:
+                value = decay**len(moves)
+            d = sample_data(states, [idx], [value])
+            data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
+            p1.model.train(data_loader)
+        p1.model.save_model(p1.file)
+
+    player = 0
+    opponent = 0
+    ties = 0
+    load_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(matches-1) + '.pt')
+    p1.load(g, load_f)
+    for i in range(matches):
+        e, _ = g.run_game_reinforcement(p1, p2)
+        if e == 1:
+            player += 1
+        elif e == -1:
+            opponent += 1
+        else:
+            ties += 1
+    print('Player win rate:', (player/matches)*100, "%")
+    print('Opponent win rate:', (opponent/matches)*100, "%")
+    print('Ties:', (ties/matches)*100, "%")
+
     assert False

@@ -249,6 +249,31 @@ class BoardGame(ABC):
         
         return e
 
+    # ----------------------------------------------
+    def run_game_reinforcement(self,x_player,o_player,s=None):
+
+        # if the initial game state is not given, use the empty board as the starting state
+        if s is None:
+            s=self.initial_game_state()
+        else: # if s is assigned, start the game from the given game state s
+            s=copy.deepcopy(s)
+
+        moves = []
+        # start the game: 
+        for i in range(self.M):
+            e = self.check_game(s) # check if the game has ended already
+            if e is not None: # if the game has ended, stop the game and return the result
+                break
+            if s.x==1:
+                r,c = x_player.choose_a_move(self,s) # "X" player choose a move
+                moves.append([s, r, c])
+            else:
+                r,c = o_player.choose_a_move(self,s) # "O" player choose a move
+            assert self.check_valid_move(s,r,c) # the move must be valid
+            self.apply_a_move(s,r,c) # apply the move and update game state
+        
+        return e, moves
+
 
 #-------------------------------------------------------
 class TicTacToe(BoardGame):
