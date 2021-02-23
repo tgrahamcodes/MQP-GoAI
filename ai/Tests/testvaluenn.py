@@ -5,7 +5,7 @@ import torch
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 from Players.minimax import RandomPlayer, MiniMaxPlayer, GameState
-from Players.valuenn import *
+from Players.valuenn import ValueNN, ValueNNPlayer
 from Players.vnet import VNet
 from game import Othello, TicTacToe, GO
 
@@ -143,20 +143,11 @@ def test_select_file():
 def test_export_model():
     '''export_model'''
 
-    #            Input:
-    #            s: the current state of the game, which is an object of a subclass of GameState.
-    #            r: the row number of the move
-    ##            c: the column number of the move
-     #           x: the role of the player, 1 if you are the "X" player in the game
-     #                   -1 if you are the "O" player in the game. 
-     #       Outputs:
-     #           valid: boolean scalar, True (if the move is valid), otherwise False 
-     # 
     #---------------------
     # Game: TicTacToe
     g = TicTacToe() 
     p = RandomPlayer()
-    v1 = ValueNNPlayer()
+    v1 = ValueNN()
 
     b=np.array([[1, 0, 0],
                 [0, 0, 0],
@@ -232,8 +223,8 @@ def test_train():
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game
-    model = ValueNNPlayer(g.channels, g.N, g.output_size) 
-
+    v = ValueNN(g.channels, g.N, g.output_size) 
+    vp = ValueNNPlayer()
     #---------------------
     # [ 0, 1, 1]
     # [ 0,-1,-1]
@@ -251,8 +242,7 @@ def test_train():
     opponent2 = np.array([1, 0, 0, 0, 1, 1, 0, 0, 0]).reshape(3,3)
     empty2 = np.array([0, 0, 0, 1, 0, 0, 1, 1, 0]).reshape(3,3)
 
-    states = torch.Tensor([[player1, opponent1, empty1], [player2, opponent2, empty2],
-    ])
+    states = torch.Tensor([[player1, opponent1, empty1], [player2, opponent2, empty2],])
     labels = [3, 3]
 
     class sample_data(Dataset):
@@ -267,7 +257,7 @@ def test_train():
             return state, label
     d = sample_data(states, labels)
     data_loader = DataLoader(d, batch_size=2, shuffle=False, num_workers=0)
-    model.train(data_loader)
+    v.train(data_loader)
 
     # print values of forward function
     print('After training:')
