@@ -6,70 +6,12 @@ from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 from Players.minimax import RandomPlayer, MiniMaxPlayer, GameState
 from Players.valuenn import ValueNN, ValueNNPlayer
-from Players.vnet import VNet
 from game import Othello, TicTacToe, GO
 
 #-------------------------------------------------------------------------
 def test_python_version():
     ''' ------------Value NN---------------------'''
     assert sys.version_info[0] == 3 # require python 3 (instead of python 2)
-
-#-------------------------------------------------------------------------
-def test_adjust_logit():
-    '''adjust_rewards'''
-    #---------------------    
-    g = TicTacToe()
-    model = ValueNNPlayer(g.input_size, g.output_size)
-    x = torch.Tensor([np.zeros((9))])
-
-    #---------------------
-    b = np.array([[0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0]])
-    s = GameState(b,x=1)
-
-    state = s.b.flatten().tolist()
-    state.append(s.x)
-
-    s = torch.Tensor([state])
-    model.adjust_logit(s, x)
-
-    adjusted = x.detach().numpy()[0]
-    assert np.allclose(adjusted, np.zeros((9)))
-
-    #---------------------
-    x = torch.Tensor([np.zeros((9))])
-    b=np.array([[0, 1,-1],
-                [0,-1, 1],
-                [0, 1,-1]])
-
-    s=GameState(b,x=1)
-    state = s.b.flatten().tolist()
-    state.append(s.x)
-    s = torch.Tensor([state])
-
-    model.adjust_logit(s, x)
-    adjusted = x.detach().numpy()[0]
-    assert np.allclose(adjusted, np.array([0, -1000, -1000, 0, -1000, -1000, 0, -1000, -1000]))
-
-    #---------------------
-    g = Othello()
-    x = torch.Tensor([np.zeros((g.input_size-1))])
-    b=np.array([[ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0]])
-    s = GameState(b,x=1)
-    state = s.b.flatten().tolist()
-    state.append(s.x)
-    s = torch.Tensor([state])
-    model.adjust_logit(s, x)
-    adjusted = x.detach().numpy()[0]
-    assert np.allclose(adjusted, np.zeros((g.input_size-1)))
 
 #-------------------------------------------------------------------------
 def test_choose_a_move():
@@ -87,7 +29,7 @@ def test_choose_a_move():
                 [0, 0, 0]])
     s=GameState(b,x=1) #it's X player's turn
     r,c = v.choose_a_move(g,s)
-    v.model = ValueNN(g.input_size, g.out_size)
+    v.model = ValueNN(g.channels, g.N, g.output_size)
     assert v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt')
     assert type(v.model) == ValueNN
     assert r in {0,1,2}
@@ -103,7 +45,7 @@ def test_choose_a_move():
     m1 = 0
     m2 = 0
     for _ in range(100):
-        v.model = ValueNN(g.input_size, g.out_size)
+        v.model = ValueNN(g.channels, g.N, g.output_size)
         r,c = v.choose_a_move(g,s)
         if (r,c) == (0,0): m0 += 1
         if (r,c) == (1,0): m1 += 1
@@ -147,7 +89,7 @@ def test_export_model():
     # Game: TicTacToe
     g = TicTacToe() 
     p = RandomPlayer()
-    v1 = ValueNN()
+    v1 = ValueNN(g.channels, g.N)
 
     b=np.array([[1, 0, 0],
                 [0, 0, 0],
@@ -159,7 +101,7 @@ def test_export_model():
     s=GameState(b,x=-1)
 
     # X Player(v1) vs O Player(p)
-    _ = g.run_a_game(x_player=v1, o_player=p, s=s)
+    _ = g.run_a_game(v1, p)
     assert Path.is_file(v1.file)
 
     #---------------------
@@ -243,27 +185,27 @@ def test_train():
     empty2 = np.array([0, 0, 0, 1, 0, 0, 1, 1, 0]).reshape(3,3)
 
     states = torch.Tensor([[player1, opponent1, empty1], [player2, opponent2, empty2],])
-    labels = [3, 3]
+    rewards = torch.Tensor([[0,-1,-1,0,0,-1,1,1,0],[0,0,1,0,0,-1,1,0,0]])
 
     class sample_data(Dataset):
-        def __init__(self, states, labels):
+        def __init__(self, states, rewards):
             self.states = states
-            self.labels = labels
+            self.rewards = rewards
         def __len__(self):
             return len(self.states) 
         def __getitem__(self, index):
             state = self.states[index]
-            label = self.labels[index]
-            return state, label
-    d = sample_data(states, labels)
-    data_loader = DataLoader(d, batch_size=2, shuffle=False, num_workers=0)
+            reward = self.rewards[index]
+            return state, reward
+    d = sample_data(states, rewards)
+    data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
     v.train(data_loader)
 
     # print values of forward function
     print('After training:')
-    for states, labels in data_loader:
-        outputs = model(states)
-        print('Expected: ', [obj.item() for obj in labels])
+    for states, rewards in data_loader:
+        outputs = v(states)
+        print('Expected: ', [obj for obj in rewards])
         print('Output: ', [list(obj.detach().numpy()) for obj in outputs])
     
     assert False

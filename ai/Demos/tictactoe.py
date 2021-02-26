@@ -249,6 +249,9 @@ if __name__ == "__main__":
         elif arg=="policy": # player with PolicyNN player
             p = PolicyNNPlayer()
             print('Now you are playing with PolicyNN Player!')
+        elif arg=="value": # player with ValueNN player
+            p = ValueNNPlayer()
+            print('Now you are palying with ValueNN Player!')
         else:
             assert False # Incorrect AI name
     else:

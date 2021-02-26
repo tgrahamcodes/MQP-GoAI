@@ -4,28 +4,34 @@ import numpy as np
 import torch
 from math import sqrt
 from pathlib import Path
-from .vnet import VNet
+from .neuralnet import NeuralNet
 from .minimax import Node, GameState
 from game import Player, GO, GO_state, Othello, TicTacToe
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
-class ValueNN(VNet):
+class ValueNN(NeuralNet):
 
     def __init__(self, channels, N, output_size=1):
         # output size = 9, to switch to q network
         super().__init__()
         self.conv =  nn.Conv2d(channels, 20, N)
         # input size is 20 output size is 1
-        self.conv = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=True)
         self.output = nn.Linear(20, output_size)
     
-
     def forward(self, states):
         x = self.conv(states)
+        x = self.relu(x)
         x = x.view(x.size(0), self.num_flat_features(x))
         x = self.output(x)
         return x
+        # game state and reward
+        # use the q function to get v
+        # design q function - output a s
+        # output a score for every valid move
+        # output size will be the size of the board instead of 1
+        # training will recieve (state, action, reward)
 
     def num_flat_features(self, x):
         size = x.size()[1:]
@@ -34,18 +40,23 @@ class ValueNN(VNet):
             num_features *= s
         return num_features
 
+    def adjust_logit(self, x, empty, banned):
+        for i in range(len(empty[0])):
+            if empty[0][i] == 0 or (banned and banned[0][i] == 1):
+                x[0][i] -= 1000 
+        return x
 
-    def supervised_training():
+    def supervised_training(data_loader):
         pass
 
-    def reinforced_training():
+    def reinforced_training(data_loader):
+        # only have action taken not the value
         pass
 
     def train(self, data_loader, epochs=500):
-
-        loss_fn = nn.MSELoss
-        test = supervised_training()
-        test2 = reinforced_training()
+        loss_fn = nn.MSELoss()
+        # test = supervised_training()
+        # test2 = reinforced_training()
         optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
         # s, a, reward
         # input game state -> get 9 scores then use output a1[i] to select action 
@@ -55,12 +66,13 @@ class ValueNN(VNet):
             running_loss = 0.0
 
             for i, mini_batch in enumerate(data_loader):
-                states, labels = mini_batch
-                # labels will be values for this case
+                states, rewards = mini_batch
                 optimizer.zero_grad()
+                
                 outputs = self(states)
-                loss = loss_fn(outputs, labels)
+                loss = loss_fn(outputs, rewards)
                 loss.backward() 
+                
                 optimizer.step()
 
                 running_loss += loss.item()
@@ -73,16 +85,6 @@ class ValueNN(VNet):
 class ValueNNPlayer(Player):
 
     # try each action and see which gives highest score
-
-    # game state
-    def v_function(s):
-        # given s, a1, a2, a3, will return v1, v2, v3 
-
-    # game state and reward
-    def q_function(s,a):
-        # use the q function to get v
-        # design q function - output a s
-         return s, a
 
     # game state in, output 9, and choose highest score
     # 0 1 -1, only matters, -2 means taken
