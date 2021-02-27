@@ -40,7 +40,7 @@ class PolicyNN(PNet):
                 x[0][i] -= 1000 
         return x
 
-    def train(self, data_loader, epochs=10):
+    def train(self, data_loader, epochs=100):
         optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
 
         for epoch in range(epochs):
@@ -57,6 +57,7 @@ class PolicyNN(PNet):
                 loss = torch.sum(-logp * rewards)
                 loss.backward()
                 optimizer.step()
+                # 1000 steps in 20 games, batch size=100 to be more stable
 
                 # running_loss += loss.item()
 

@@ -302,25 +302,35 @@ def test_reinforce():
         p1.load(g, load_f)
         save_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i) + '.pt')
         p1.set_file(save_f)
-        e, moves = g.run_game_reinforcement(p1, p2)
-        for s, r, c in moves:
-            states = p1.extract_states(g, s)
-            idx = r*g.N + c
-            if e != 0:
-                value = e * (decay**len(moves))
-            else:
-                value = decay**len(moves)
-            d = sample_data(states, [idx], [value])
-            data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
-            p1.model.train(data_loader)
+        state_tensor = torch.zeros((1, g.channels, g.N, g.N))
+        state_list = []
+        idxs = []
+        values = []
+        for k in range(10):
+            e, moves = g.run_game_reinforcement(p1, p2)
+            for j, move in enumerate(moves):
+                s, r, c = move
+                states = p1.extract_states(g, s)
+                idx = r*g.N + c
+                value = e * (decay**(len(moves)-j))
+                if k == 0 and j == 0:
+                    state_tensor = states
+                else:
+                    state_tensor = torch.cat((state_tensor, states))
+                idxs.append(idx)
+                values.append(value)
+        d = sample_data(state_tensor, idxs, values)
+        data_loader = DataLoader(d, batch_size=100, shuffle=True, num_workers=0)
+        p1.model.train(data_loader)
         p1.model.save_model(p1.file)
+        print("Model", i, "trained")
 
     player = 0
     opponent = 0
     ties = 0
     load_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(matches-1) + '.pt')
     p1.load(g, load_f)
-    for i in range(matches):
+    for i in range(1000):
         e, _ = g.run_game_reinforcement(p1, p2)
         if e == 1:
             player += 1
@@ -328,8 +338,8 @@ def test_reinforce():
             opponent += 1
         else:
             ties += 1
-    print('Player win rate:', (player/matches)*100, "%")
-    print('Opponent win rate:', (opponent/matches)*100, "%")
-    print('Ties:', (ties/matches)*100, "%")
+    print('Player win rate:', (player/1000)*100, "%")
+    print('Opponent win rate:', (opponent/1000)*100, "%")
+    print('Ties:', (ties/1000)*100, "%")
 
     assert False
