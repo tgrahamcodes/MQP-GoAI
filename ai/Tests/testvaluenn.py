@@ -18,16 +18,15 @@ def test_choose_a_move():
     '''choose_a_move'''
     #---------------------
     # Game: TicTacToe
-    g = TicTacToe()  # game
+    g = TicTacToe()
     v = ValueNNPlayer()
     assert v.file == None
     assert v.model == None
 
-    #---------------------
     b=np.array([[0, 0, 0],
                 [0, 0, 0],
                 [0, 0, 0]])
-    s=GameState(b,x=1) #it's X player's turn
+    s=GameState(b,x=1) # It is X player's turn
     r,c = v.choose_a_move(g,s)
     v.model = ValueNN(g.channels, g.N, g.output_size)
     assert v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt')
@@ -35,11 +34,10 @@ def test_choose_a_move():
     assert r in {0,1,2}
     assert c in {0,1,2}
 
-    #---------------------
     b=np.array([[0, 1,-1],
                 [0,-1, 1],
                 [0, 1,-1]])
-    s=GameState(b,x=1) #it's X player's turn
+    s=GameState(b,x=1) # It is X player's turn
 
     m0 = 0
     m1 = 0
@@ -58,76 +56,75 @@ def test_choose_a_move():
 def test_select_file():
     '''select_file'''
     #---------------------
+    # Game: TicTacToe
     g1 = TicTacToe()
     v1 = ValueNNPlayer()
     v1.file = v1.select_file(g1)
     assert v1.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt')
 
     #---------------------
+    # Game: Othello
     g2 = Othello()
     v2 = ValueNNPlayer()
     v2.file = v2.select_file(g2)
     assert v2.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_Othello.pt')
 
     #---------------------
+    # Game: Go
+    # 5x5 Playing board
     g3 = GO(5)
     v3 = ValueNNPlayer()
     v3.file = v3.select_file(g3)
     assert v3.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_GO_5x5.pt')
 
     #---------------------
+    # Game: Go
+    # 10x10 Playing board
     g4 = GO(10)
     v4 = ValueNNPlayer()
     v4.file = v4.select_file(g4)
     assert v4.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_GO_10x10.pt')
 
 #-------------------------------------------------------------------------
-def test_export_model():
-    '''export_model'''
-
+def test_save_model():
+    '''save_model'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe() 
     p = RandomPlayer()
-    v1 = ValueNN(g.channels, g.N)
+    v = ValueNNPlayer()
 
     b=np.array([[1, 0, 0],
                 [0, 0, 0],
                 [0, 0, 0]])
+    s=GameState(b,x=1) #it's X player's turn
 
-    # b current board state
-    # x current user playing (-1 for O && 1 for x)
-
-    s=GameState(b,x=-1)
-
-    # X Player(v1) vs O Player(p)
-    _ = g.run_a_game(v1, p)
-    assert Path.is_file(v1.file)
-
+    # Saving the model and then testing the model by comparing the filenames and type
+    v.save(g)
+    assert (v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt'))
+    assert v.file != None
+    assert v.model != None
+    assert type(v.model) == ValueNN
+    
     #---------------------
     # Game: Othello
     g = Othello()
-    v2 = ValueNN()
-    b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0],
-                [ 0, 0, 0, 0, 0, 0, 0, 0]])
-    s = GameState(b,x=1)
-    _ = g.run_a_game(v3, p)
-    assert Path.is_file(p3.file)
+    v = ValueNNPlayer()
+    v.save(g)
+    assert (v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_Othello.pt'))
+    assert v.file != None
+    assert v.model != None
+    assert type(v.model) == ValueNN
 
     #---------------------
-    # Game: GO
+    # Game: Go
     g = GO(5)
-    v3 = ValueNN()
-    b=np.zeros((5,5))
-    s = GameState(b,x=1)
-    _ = g.run_a_game(v3, p)
-    assert Path.is_file(v3.file)
+    v = ValueNNPlayer()
+    v.save(g)
+    assert (v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_GO_5x5.pt'))
+    assert v.file != None
+    assert v.model != None
+    assert type(v.model) == ValueNN
 
 #-------------------------------------------------------------------------
 def test_load():
@@ -139,6 +136,7 @@ def test_load():
     v.load(g)
     assert v.file != None
     assert v.model != None
+    assert (v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt'))
     assert type(v.model) == ValueNN
 
     #---------------------
@@ -148,6 +146,7 @@ def test_load():
     v.load(g)
     assert v.file != None
     assert v.model != None
+    assert (v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_Othello.pt'))
     assert type(v.model) == ValueNN
 
     #---------------------
@@ -157,6 +156,7 @@ def test_load():
     v.load(g)
     assert v.file != None
     assert v.model != None
+    assert (v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_GO_5x5.pt'))
     assert type(v.model) == ValueNN
 
 #-------------------------------------------------------------------------
@@ -164,10 +164,9 @@ def test_train():
     '''train'''
     #---------------------
     # Game: TicTacToe
-    g = TicTacToe()  # game
+    g = TicTacToe()
     v = ValueNN(g.channels, g.N, g.output_size) 
-    vp = ValueNNPlayer()
-    #---------------------
+
     # [ 0, 1, 1]
     # [ 0,-1,-1]
     # [ 0, 0, 1]
@@ -187,6 +186,8 @@ def test_train():
     states = torch.Tensor([[player1, opponent1, empty1], [player2, opponent2, empty2],])
     rewards = torch.Tensor([[0,-1,-1,0,0,-1,1,1,0],[0,0,1,0,0,-1,1,0,0]])
 
+    # The sample data class to be provided to the training function which accepts a
+    # Dataset object.
     class sample_data(Dataset):
         def __init__(self, states, rewards):
             self.states = states
@@ -201,11 +202,12 @@ def test_train():
     data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
     v.train(data_loader)
 
-    # print values of forward function
-    print('After training:')
+    # Print out the training data from the forward function
+    print('\nAfter training:\n')
     for states, rewards in data_loader:
         outputs = v(states)
-        print('Expected: ', [obj for obj in rewards])
-        print('Output: ', [list(obj.detach().numpy()) for obj in outputs])
-    
+        print('Expected output: ', [obj for obj in rewards])
+        print('Actual output: ', [list(obj.detach().numpy()) for obj in outputs],'\n')
+
     assert False
+#-------------------------------------------------------------------------

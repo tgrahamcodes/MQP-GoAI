@@ -246,6 +246,12 @@ class BoardGame(ABC):
             x_player.model.save_model(x_player.file)
         if isinstance(o_player, PolicyNNPlayer):
             o_player.model.save_model(o_player.file)
+
+        from Players.valuenn import ValueNNPlayer
+        if isinstance(x_player, ValueNNPlayer):
+            x_player.model.save_model(x_player.file)
+        if isinstance(o_player, ValueNNPlayer):
+            o_player.model.save_model(o_player.file)
         
         return e
 
