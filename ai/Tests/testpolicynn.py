@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import os
 import torch
+import csv
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 from Players.minimax import RandomPlayer, MiniMaxPlayer, GameState
@@ -270,7 +271,7 @@ def test_reinforce():
     '''reinforce'''
     #---------------------
     # Game: TicTacToe
-    g = TicTacToe()  # game
+    g = Othello()  # game
     p1 = PolicyNNPlayer()
     p2 = PolicyNNPlayer()
 
@@ -293,8 +294,9 @@ def test_reinforce():
         dirs.mkdir(parents=True, exist_ok=True)
 
     decay = 0.99
-    matches = 100
-    for i in range(matches):
+    iterations = 100
+    matches = 1000
+    for i in range(10):
         if i == 0:
             load_f = None
         else:
@@ -302,6 +304,11 @@ def test_reinforce():
         p1.load(g, load_f)
         save_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i) + '.pt')
         p1.set_file(save_f)
+
+        if i >= 10:
+            player_b_load = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i-10) + '.pt')
+            p2.load(g, player_b_load)
+
         state_tensor = torch.zeros((1, g.channels, g.N, g.N))
         state_list = []
         idxs = []
@@ -325,21 +332,70 @@ def test_reinforce():
         p1.model.save_model(p1.file)
         print("Model", i, "trained")
 
-    player = 0
-    opponent = 0
-    ties = 0
-    load_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(matches-1) + '.pt')
-    p1.load(g, load_f)
-    for i in range(1000):
-        e, _ = g.run_game_reinforcement(p1, p2)
-        if e == 1:
-            player += 1
-        elif e == -1:
-            opponent += 1
-        else:
-            ties += 1
-    print('Player win rate:', (player/1000)*100, "%")
-    print('Opponent win rate:', (opponent/1000)*100, "%")
-    print('Ties:', (ties/1000)*100, "%")
-
     assert False
+
+
+#-------------------------------------------------------------------------
+def test_win_rates():
+    '''win rates'''
+    #---------------------
+    # Game: TicTacToe
+    g = TicTacToe()  # game
+    p1 = PolicyNNPlayer()
+    p2 = PolicyNNPlayer()
+    p3 = PolicyNNPlayer()
+
+    dirs = Path(__file__).parents[0].joinpath('WinRates/')
+    if not Path.exists(dirs):
+        dirs.mkdir(parents=True, exist_ok=True)
+
+    iterations = 100
+    p1_file = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(iterations-1) + '.pt')
+    p1.load(g, p1_file)
+    csv_file = Path(__file__).parents[0].joinpath('WinRates/PolicyNN_' + g.__class__.__name__ + '_vsModels.csv')
+    with open(csv_file, mode='w+') as f:
+        fieldnames = ['Player', 'Opponent', 'Win %', 'Loss %', 'Tie %']
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for i in range(iterations):
+            p2_file = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i) + '.pt')
+            p2.load(g, p2_file)
+            player = 0
+            opponent = 0
+            ties = 0
+            for j in range(1000):
+                e, _ = g.run_game_reinforcement(p1, p2)
+                if e == 1:
+                    player += 1
+                elif e == -1:
+                    opponent += 1
+                else:
+                    ties += 1
+            writer.writerow({'Player': ('Model '+str(iterations-1)), 'Opponent': ('Model '+str(i)), 
+            'Win %': (player/1000)*100, 'Loss %': (opponent/1000)*100, 'Tie %': (ties/1000)*100})
+    f.close()
+
+    csv_file = Path(__file__).parents[0].joinpath('WinRates/PolicyNN_' + g.__class__.__name__ + '_vsRandom.csv')
+    with open(csv_file, mode='w+') as f:
+        fieldnames = ['Player', 'Opponent', 'Win %', 'Loss %', 'Tie %']
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for i in range(iterations):
+            p2_file = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i) + '.pt')
+            p2.load(g, p2_file)
+            player = 0
+            opponent = 0
+            ties = 0
+            for j in range(1000):
+                e, _ = g.run_game_reinforcement(p2, p3)
+                if e == 1:
+                    player += 1
+                elif e == -1:
+                    opponent += 1
+                else:
+                    ties += 1
+            writer.writerow({'Player': ('Model '+str(i)), 'Opponent': 'Random', 
+            'Win %': (player/1000)*100, 'Loss %': (opponent/1000)*100, 'Tie %': (ties/1000)*100})
+    f.close()
+
+    assert True
