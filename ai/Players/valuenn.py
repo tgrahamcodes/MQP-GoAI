@@ -2,7 +2,7 @@
 from torch import nn
 import numpy as np
 import torch
-from math import sqrt
+import math
 from pathlib import Path
 from .neuralnet import NeuralNet
 from .minimax import Node, GameState
@@ -38,13 +38,38 @@ class ValueNN(NeuralNet):
                 x[0][i] -= 1000 
         return x
 
-    def supervised_training(data_loader):
-        pass
+    def supervised_learning(states, matrix, location, opp_location, empty_location):
+        #For each game state, 3 channel matrix, our location, opponents location, empty location
+        loss_fn = nn.MSELoss()
+        optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+
+        for epoch in range(epochs):
+            running_loss = 0.0
+
+            for i, mini_batch in enumerate(data_loader):
+                states, actions, rewards = mini_batch
+                optimizer.zero_grad()
+                
+                outputs = self(states)
+                loss = loss_fn(outputs, rewards)
+                loss.backward() 
+                
+                optimizer.step()
+
+                running_loss += loss.item()
+                
+                if (states == rewards):
+                    print('True')
+        
+
+                if i == (len(data_loader)-1):
+                    print('epoch %d: %.3f' % (epoch+1, running_loss/len(data_loader)))
+
 
     def reinforced_training(data_loader):
         pass
 
-    def train(self, data_loader, epochs=50):
+    def train(self, data_loader, epochs=500):
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
         
@@ -68,18 +93,6 @@ class ValueNN(NeuralNet):
 
 #-------------------------------------------------------
 class ValueNNPlayer(Player):
-
-    # try each action and see which gives highest score
-
-    # game state in, output 9, and choose highest score
-    # 0 1 -1, only matters, -2 means taken
-    # guarenteed to win = 1 
-    # " " lose = -1
-    # s, a=4, -1 (one training sample)
-    # s, a=9, 1
-    # s, a=8, 1
-    # design a few to test the model
-    # plug in state to get value to test   
 
     # ----------------------------------------------
     def __init__(self):
