@@ -3,6 +3,7 @@ from torch import nn
 import numpy as np
 import torch
 import math
+import random
 from pathlib import Path
 from .neuralnet import NeuralNet
 from .minimax import Node, GameState
@@ -100,14 +101,10 @@ class ValueNNPlayer(Player):
         self.model = None
 
     # ----------------------------------------------
-    def choose_a_move(self,g,s):
-        if not self.file:
-            self.load(g)
-
+    def extract_states(self, g, s):
         player = np.zeros_like(s.b)
         opponent = np.zeros_like(s.b)
         empty = np.zeros_like(s.b)
-        
         for i, row in enumerate(s.b):
             player[i] = [1 if x == s.x else 0 for x in row]
             opponent[i] = [1 if x == -s.x else 0 for x in row]
@@ -117,15 +114,43 @@ class ValueNNPlayer(Player):
             banned = np.zeros_like(s.b)
             if s.p:
                 banned[pos[0]][pos[1]] = 1
-            states = torch.Tensor([[player, opponent, empty, banned]])
+            states = torch.Tensor([
+                [player,
+                opponent,
+                empty,
+                banned]
+            ])
         else:
-            states = torch.Tensor([[player, opponent, empty]])
+            states = torch.Tensor([
+                [player,
+                opponent,
+                empty]
+            ])
 
-        tensor = self.model(states)
-        v = tensor.detach().numpy()[0]
-        idx = np.argmax(v)
-        r,c = g.convert_index(idx)
-        return r,c
+        return states  
+
+    # ----------------------------------------------
+    def choose_a_move(self,g,s):
+        if not self.file:
+            self.load(g)
+
+        v = []
+
+        states = self.extract_states(g, s)
+        z = self.model(states)
+ 
+        r = random.random()
+        v = z.detach().numpy()
+        
+        if (r >= 0.9):
+            m = g.get_valid_moves(s)
+            idx = random.randint(0, len(m)-1)
+            r,c = m[idx]
+        else:
+            idx = np.argmax(np.array(v))
+            r,c = g.convert_index(idx)        
+
+        return r, c
     
     # ----------------------------------------------
     def select_file(self, g):
