@@ -40,29 +40,38 @@ class PolicyNN(PNet):
                 x[0][i] -= 1000 
         return x
 
-    def train(self, data_loader, epochs=100):
-        optimizer = torch.optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
+    def train(self, data_loader, epochs=500):
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.0001)
 
         for epoch in range(epochs):
-            running_loss = 0.0
-
+            # running_loss = 0.0
             for i, mini_batch in enumerate(data_loader):
                 states, labels, rewards = mini_batch
                 optimizer.zero_grad()
                 z = self(states)
                 a = nn.functional.softmax(z)
+                '''
                 x = Categorical(a)
-                m = x.sample()
-                logp = x.log_prob(m)
+                logp = x.log_prob(labels)
                 loss = torch.sum(-logp * rewards)
+                # print(loss.item())
                 loss.backward()
                 optimizer.step()
-                # 1000 steps in 20 games, batch size=100 to be more stable
-
+                '''
+                loss = 0
+                for j, activation in enumerate(a):
+                    x = Categorical(activation)
+                    logp = x.log_prob(labels[j])
+                    loss += -logp * rewards[j]
+                    # loss += -logit[labels[j]] * rewards[j] 
+                loss.backward()
+                # print(self.output.weight.grad)
+                optimizer.step()
+                    
                 # running_loss += loss.item()
 
                 # if i == (len(data_loader)-1):
-                #     print('epoch %d: %.3f' % (epoch+1, running_loss/len(data_loader)))
+                #     print('epoch %d: %.5f' % (epoch+1, running_loss/len(data_loader)))
 
 
 #-------------------------------------------------------

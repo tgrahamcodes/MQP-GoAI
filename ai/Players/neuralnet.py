@@ -22,3 +22,7 @@ class NeuralNet(ABC, nn.Module):
     @abstractmethod
     def train(self, data_loader, epochs):
         pass
+
+    # @abstractmethod
+    # def reinforce(self, data_loader, epochs):
+    #     pass

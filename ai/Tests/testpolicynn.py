@@ -253,11 +253,19 @@ def test_train():
             reward = self.rewards[index]
             return state, label, reward
     d = sample_data(states, labels, rewards)
-    data_loader = DataLoader(d, batch_size=2, shuffle=False, num_workers=0)
+    data_loader = DataLoader(d, batch_size=1, shuffle=False, num_workers=0)
+
+    print('Before training:')
+    for states, labels, rewards in data_loader:
+        z = model(states)
+        a = nn.functional.softmax(z)
+        print('Label: ', [obj.item() for obj in labels], '  Reward: ', [obj.item() for obj in rewards])
+        print('Output: ', [list(obj.detach().numpy()) for obj in a])
+
     model.train(data_loader)
 
     # print values of forward function
-    print('After training:')
+    print('\nAfter training:')
     for states, labels, rewards in data_loader:
         z = model(states)
         a = nn.functional.softmax(z)
@@ -271,7 +279,7 @@ def test_reinforce():
     '''reinforce'''
     #---------------------
     # Game: TicTacToe
-    g = Othello()  # game
+    g = TicTacToe()  # game
     p1 = PolicyNNPlayer()
     p2 = PolicyNNPlayer()
 
@@ -296,7 +304,7 @@ def test_reinforce():
     decay = 0.99
     iterations = 100
     matches = 1000
-    for i in range(10):
+    for i in range(iterations):
         if i == 0:
             load_f = None
         else:
@@ -305,7 +313,7 @@ def test_reinforce():
         save_f = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i) + '.pt')
         p1.set_file(save_f)
 
-        if i >= 10:
+        if i % 10 == 0:
             player_b_load = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(i-10) + '.pt')
             p2.load(g, player_b_load)
 
@@ -313,7 +321,7 @@ def test_reinforce():
         state_list = []
         idxs = []
         values = []
-        for k in range(10):
+        for k in range(matches):
             e, moves = g.run_game_reinforcement(p1, p2)
             for j, move in enumerate(moves):
                 s, r, c = move
@@ -343,7 +351,7 @@ def test_win_rates():
     g = TicTacToe()  # game
     p1 = PolicyNNPlayer()
     p2 = PolicyNNPlayer()
-    p3 = PolicyNNPlayer()
+    p3 = RandomPlayer()
 
     dirs = Path(__file__).parents[0].joinpath('WinRates/')
     if not Path.exists(dirs):
@@ -353,7 +361,7 @@ def test_win_rates():
     p1_file = Path(__file__).parents[0].joinpath('Versions/PolicyNN_' + g.__class__.__name__ + '_Version' + str(iterations-1) + '.pt')
     p1.load(g, p1_file)
     csv_file = Path(__file__).parents[0].joinpath('WinRates/PolicyNN_' + g.__class__.__name__ + '_vsModels.csv')
-    with open(csv_file, mode='w+') as f:
+    with open(csv_file, mode='w+', newline='') as f:
         fieldnames = ['Player', 'Opponent', 'Win %', 'Loss %', 'Tie %']
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -376,7 +384,7 @@ def test_win_rates():
     f.close()
 
     csv_file = Path(__file__).parents[0].joinpath('WinRates/PolicyNN_' + g.__class__.__name__ + '_vsRandom.csv')
-    with open(csv_file, mode='w+') as f:
+    with open(csv_file, mode='w+', newline='') as f:
         fieldnames = ['Player', 'Opponent', 'Win %', 'Loss %', 'Tie %']
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
