@@ -67,8 +67,11 @@ class ValueNN(NeuralNet):
                     print('epoch %d: %.3f' % (epoch+1, running_loss/len(data_loader)))
 
 
-    def reinforced_training(data_loader):
-        pass
+    def reinforced_training(data_loader, iterations):
+        reward = 0
+        for i in iterations:
+            train(self, data_loader, epochs=500)
+
 
     def train(self, data_loader, epochs=500):
         loss_fn = nn.MSELoss()
@@ -130,9 +133,12 @@ class ValueNNPlayer(Player):
         return states  
 
     # ----------------------------------------------
-    def choose_a_move(self,g,s):
+    def choose_a_move(self,g,s,ep_greed):
         if not self.file:
             self.load(g)
+        
+        if (ep_greed == 0):
+            ep_greed = 0.9
 
         v = []
 
@@ -141,14 +147,17 @@ class ValueNNPlayer(Player):
  
         r = random.random()
         v = z.detach().numpy()
-        
-        if (r >= 0.9):
+
+        if (r >= ep_greed):
+            #  if r is > ep level then do random
             m = g.get_valid_moves(s)
             idx = random.randint(0, len(m)-1)
             r,c = m[idx]
         else:
+            # else regularly choose the largest
+            m = g.get_valid_moves(s)
             idx = np.argmax(np.array(v))
-            r,c = g.convert_index(idx)        
+            r,c = g.convert_index(idx)       
 
         return r, c
     

@@ -22,36 +22,39 @@ def test_choose_a_move():
     v = ValueNNPlayer()
     assert v.file == None
     assert v.model == None
-
-    b=np.array([[0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0]])
-    s=GameState(b,x=1) # It is X player's turn
-    r,c = v.choose_a_move(g,s)
-    v.model = ValueNN(g.channels, g.N, g.output_size)
-    assert v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt')
-    assert type(v.model) == ValueNN
-    assert r in {0,1,2}
-    assert c in {0,1,2}
-
+    ep_greed = 0.9
+    
+    # -1 taken by Y
+    # 1 taken by X
+    # 0 free
     b=np.array([[0, 1,-1],
                 [0,-1, 1],
                 [0, 1,-1]])
     s=GameState(b,x=1) # It is X player's turn
+    
+    r,c = v.choose_a_move(g,s,ep_greed) 
+    count = 0
+    for i in range(100):
+        r,c = v.choose_a_move(g,s,ep_greed) 
+        print ("Testing : (90%) Chose move: (r,c) ", r, c, ep_greed)
 
-    m0 = 0
-    m1 = 0
-    m2 = 0
-    for _ in range(100):
-        v.model = ValueNN(g.channels, g.N, g.output_size)
-        r,c = v.choose_a_move(g,s)
-        if (r,c) == (0,0): m0 += 1
-        if (r,c) == (1,0): m1 += 1
-        if (r,c) == (2,0): m2 += 1
-    assert m0 < 50
-    assert m1 < 50
-    assert m2 < 50
+    v.model = ValueNN(g.channels, g.N, g.output_size)
+    assert v.file == Path(__file__).parents[1].joinpath('Players/Memory/ValueNN_TicTacToe.pt')
+    assert type(v.model) == ValueNN
 
+    # Choose another move based on .10, so random
+    ep_greed = 0.1
+    b=np.array([[0, 1,-1],
+                [0,-1, 1],
+                [0, 1,-1]])
+    s=GameState(b,x=1) # It is X player's turn
+    r,c = v.choose_a_move(g,s,ep_greed) 
+
+    for i in range(100):
+        r,c = v.choose_a_move(g,s,ep_greed) 
+        print ("Exploring : (10%) Chose move: (r,c) ", r, c, ep_greed)
+    
+    assert False
 #-------------------------------------------------------------------------
 def test_select_file():
     '''select_file'''
