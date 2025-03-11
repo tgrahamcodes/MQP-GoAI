@@ -1,4 +1,4 @@
-from problem2 import *
+from problem2 import MCNode, MCTSPlayer, RandomPlayer
 from problem1 import MiniMaxPlayer, TicTacToe, GameState
 from game import Othello 
 import numpy as np

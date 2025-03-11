@@ -1,4 +1,4 @@
-from problem1 import *
+from problem1 import TicTacToe, RandomPlayer, MMNode, MiniMaxPlayer
 from game import GameState, Othello, GO_state, GO
 import copy
 import numpy as np
@@ -154,11 +154,6 @@ def test_check_game():
     e = g.check_game(s)
     assert e == 0 # a tie
 
-
-
-
-
-
 #-------------------------------------------------------------------------
 def test_choose_a_move():
     '''(5 points) random choose_a_move()'''
@@ -198,7 +193,6 @@ def test_choose_a_move():
         assert r==2-c 
         assert r>-1 and r<3
 
-
     #---------------------
     # The AI agent should also be compatible with the game Othello.
     # now let's test on the game "Othello":
@@ -228,8 +222,6 @@ def test_choose_a_move():
     assert count[3]>20
     assert count[4]>20
 
-
-
     # test whether we can run a game using random player
     b=np.array([[ 0, 0,-1, 1,-1, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -243,8 +235,6 @@ def test_choose_a_move():
     for i in range(10):
         e = g.run_a_game(p,p,s=s)
         assert e==-1
-
-
 
     b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -261,7 +251,6 @@ def test_choose_a_move():
         w+=e
     assert np.abs(w)<9
 
-
     # test whether we can run a game using random player
     b=np.array([[ 0, 0,-1, 1,-1, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -275,8 +264,6 @@ def test_choose_a_move():
     for i in range(10):
         e = g.run_a_game(p,p,s=s)
         assert e==-1
-
-
 
     b=np.array([[ 0,-1, 1,-1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -316,7 +303,6 @@ def test_choose_a_move():
     assert count[3]>20
     assert count[4]>20
 
-
 #-------------------------------------------------------------------------
 def test_expand():
     '''(5 points) expand'''
@@ -344,7 +330,7 @@ def test_expand():
         assert c.s.x==-1
         assert c.p==n
         assert c.c==[] #only add one level of children nodes, not two levels.
-        assert c.v==None
+        assert c.v is None
 
     # child node A
     b=np.array([[ 1, 1,-1],
@@ -496,8 +482,6 @@ def test_expand():
             assert x.s.x==-1 
     assert c
 
-
-    
     #---------------------
     b=np.array([[ 0, 1,-1, 1, 0, 0, 0, 0],
                 [ 0, 0, 1, 0, 0, 0, 0, 0],
@@ -521,7 +505,7 @@ def test_expand():
         assert type(c)==MMNode
         assert c.p==n
         assert c.c==[]
-        assert c.v==None
+        assert c.v is None
 
     # child node A
     b=np.array([[-1,-1,-1, 1, 0, 0, 0, 0],
@@ -577,7 +561,6 @@ def test_expand():
             assert x.s.x == 1 
     assert c
 
-
     #---------------------
     # The AI agent should also be compatible with the game: GO 
     # now let's test on the game "GO":
@@ -608,7 +591,6 @@ def test_expand():
     n.expand(g)
     assert len(n.c) ==3  
 
-
 #-------------------------------------------------------------------------
 def test_build_tree():
     '''(5 points) build_tree'''
@@ -629,9 +611,9 @@ def test_build_tree():
     assert np.allclose(b,b_)
     assert len(n.c) ==3 
     assert n.s.x==1
-    assert n.v==None
-    assert n.p==None
-    assert n.m==None
+    assert n.v is None
+    assert n.p is None
+    assert n.m is None
 
     assert np.allclose(n.s.b,b_) 
     for c in n.c:
@@ -639,7 +621,7 @@ def test_build_tree():
         assert c.s.x==-1
         assert c.p==n
         assert len(c.c)==2
-        assert c.v==None
+        assert c.v is None
 
     #-----------------------
     # child node A
@@ -781,7 +763,6 @@ def test_build_tree():
             assert x.c[0].c==[]
     assert c
 
-
     #-----------------------
     b=np.array([[ 0, 0, 1],
                 [ 0, 1, 1],
@@ -792,9 +773,9 @@ def test_build_tree():
 
     assert len(n.c) ==4 
     assert n.s.x==-1
-    assert n.v==None
-    assert n.p==None
-    assert n.m==None
+    assert n.v is None
+    assert n.p is None
+    assert n.m is None
     
     b1=np.array([[-1, 0, 1],
                  [ 0, 1, 1],
@@ -811,7 +792,7 @@ def test_build_tree():
 
     for c in n.c:
         assert c.s.x== 1
-        assert c.v==None
+        assert c.v is None
         assert c.p==n
         if np.allclose(c.s.b,b1):
             assert c.m == (0,0)
@@ -825,7 +806,6 @@ def test_build_tree():
         if np.allclose(c.s.b,b4):
             assert c.m == (2,1)
             assert c.c == [] #terminal node, no child
-
 
     # The AI agent should be compatible with both games: TicTacToe and Othello.
     # now let's test on the game "Othello":
@@ -850,15 +830,15 @@ def test_build_tree():
     assert np.allclose(n.s.b,b_)
     assert len(n.c) ==2 
     assert n.s.x==1
-    assert n.v==None
-    assert n.p==None
-    assert n.m==None
+    assert n.v is None
+    assert n.p is None
+    assert n.m is None
 
     for c in n.c:
         assert type(c)==MMNode
         assert c.s.x==-1
         assert c.p==n
-        assert c.v==None
+        assert c.v is None
         assert len(c.c)==1
     #-----------------------
     # child node A
@@ -900,7 +880,7 @@ def test_build_tree():
     # Child Node A's children
     # grand child node A1
     assert ca.c[0].p==ca
-    assert ca.c[0].v==None
+    assert ca.c[0].v is None
     assert ca.c[0].m==(0,6)
     assert ca.c[0].c==[]
     b=np.array([[ 0, 0,-1,-1,-1,-1,-1, 0],
@@ -917,7 +897,7 @@ def test_build_tree():
     # Child Node B's children
     # grand child node B1
     assert cb.c[0].p==cb
-    assert cb.c[0].v==None
+    assert cb.c[0].v is None
     assert cb.c[0].m==(0,0)
     assert cb.c[0].c==[]
     b=np.array([[-1,-1,-1,-1,-1, 0, 0, 0],
@@ -949,14 +929,14 @@ def test_build_tree():
     assert np.allclose(n.s.b,b_)
     assert len(n.c) ==2 
     assert n.s.x==1
-    assert n.v==None
-    assert n.p==None
-    assert n.m==None
+    assert n.v is None
+    assert n.p is None
+    assert n.m is None
 
     for c in n.c:
         assert type(c)==MMNode
         assert c.p==n
-        assert c.v==None
+        assert c.v is None
         assert len(c.c)==1
     #-----------------------
     # child node A
@@ -1000,7 +980,7 @@ def test_build_tree():
     # Child Node A's children
     # grand child node A1
     assert ca.c[0].p==ca
-    assert ca.c[0].v==None
+    assert ca.c[0].v is None
     assert ca.c[0].m==(0,5)
     assert ca.c[0].c==[]
     b=np.array([[ 1, 1, 1, 1, 1, 1, 0, 0],
@@ -1017,7 +997,7 @@ def test_build_tree():
     # Child Node B's children
     # grand child node B1
     assert cb.c[0].p==cb
-    assert cb.c[0].v==None
+    assert cb.c[0].v is None
     assert cb.c[0].m==(0,6)
     assert cb.c[0].c==[]
     b=np.array([[ 0,-1,-1,-1,-1,-1,-1, 0],
@@ -1139,7 +1119,6 @@ def test_compute_v():
     # so the min value among the two children nodes min(-1,0) =-1 
     assert  n.v==-1 # O player won the game
 
-
     #-------------------------
     # a tie after one move
     b=np.array([[-1, 1,-1],
@@ -1150,7 +1129,6 @@ def test_compute_v():
     n.build_tree(g)
     n.compute_v(g) 
     assert  n.v== 0  
-
 
     #-------------------------
     # optimal moves lead to: O player wins
@@ -1221,7 +1199,6 @@ def test_compute_v():
     n.compute_v(g) 
     assert  n.v== 1
 
-
     b=np.array([[ 1,-1, 1],
                 [ 0, 0, 1],
                 [ 0, 0,-1]])
@@ -1285,7 +1262,6 @@ def test_compute_v():
     n.compute_v(g)
     assert  n.v==-1
     
-
     b=np.array([[ 0, 0,-1, 1, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -1305,7 +1281,6 @@ def test_compute_v():
     n.compute_v(g)
     assert  n.v==1
 
-
     b=np.array([[ 0,-1, 1,-1, 1,-1, 0, 0],
                 [ 1, 0, 0, 0, 0, 0, 0, 0],
                 [ 1, 0, 0, 0, 0, 0, 0, 0],
@@ -1319,7 +1294,6 @@ def test_compute_v():
     n.build_tree(g)
     n.compute_v(g)
     assert  n.v==1
-
 
 #-------------------------------------------------------------------------
 def test_choose_optimal_move():
@@ -1402,7 +1376,6 @@ def test_choose_optimal_move():
     assert r == 0
     assert c == 0
 
-
 #-------------------------------------------------------------------------
 def test_minmax_choose_a_move():
     '''(10 points) minmax choose_a_move()'''
@@ -1422,7 +1395,6 @@ def test_minmax_choose_a_move():
     assert np.allclose(s.b,b_)
     assert r==2  
     assert c==0  
-
 
     # three possible moves, one leads to win
     p = MiniMaxPlayer()
@@ -1444,7 +1416,6 @@ def test_minmax_choose_a_move():
     assert r == 1
     assert c == 1
 
-
     #-------------------------
     # play against random player in the game
     p1 = MiniMaxPlayer()
@@ -1459,7 +1430,6 @@ def test_minmax_choose_a_move():
         s = GameState(b,x=1) # it's X player's turn
         e = g.run_a_game(p1,p2,s=s)
         assert e==1
-
 
     #-------------------------
     # play against MinMax player in the game
@@ -1517,14 +1487,12 @@ def test_minmax_choose_a_move():
        if you want to try this, uncomment the following three lines of code.
        Note: it may take 1 or 2 minutes to run
     '''
-    #g = TicTacToe()
-    #e = g.run_a_game(p1,p1)
-    #assert e==0
+    # g = TicTacToe()
+    # e = g.run_a_game(p1,p1)
+    # assert e==0
     #******************************************************
     #******************************************************
     #******************************************************
-
-
 
     #----------------------------------------------
     # The AI agent should be compatible with both games: TicTacToe and Othello.
@@ -1553,7 +1521,6 @@ def test_minmax_choose_a_move():
         w+=e 
     assert np.abs(w)<9
 
-
     #******************************************************
     #*******************(DO NOT TRY ME:)*******************
     #******************************************************
@@ -1568,4 +1535,3 @@ def test_minmax_choose_a_move():
     #******************************************************
     #******************************************************
     #******************************************************
-

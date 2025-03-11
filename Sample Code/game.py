@@ -4,8 +4,6 @@ import numpy as np
 import copy
 #-------------------------------------------------------------------------
 
-
-
 #-------------------------------------------------------
 class GameState:
     '''
@@ -24,7 +22,6 @@ class GameState:
         '''
         self.b = b
         self.x = x 
- 
 
 #-------------------------------------------------------
 class BoardGame(ABC):
@@ -43,7 +40,6 @@ class BoardGame(ABC):
                 s: the initial state of the game, which is an object of a subclass of GameState.
         '''
         pass
-
 
     # ----------------------------------------------
     @abstractmethod
@@ -291,7 +287,6 @@ class Othello(BoardGame):
                     break
         return False
 
-
     # ----------------------------------------------
     def get_valid_moves(self,s):
         '''
@@ -342,7 +337,6 @@ class Othello(BoardGame):
             if self.check_valid_move(s,r,c):
                 m.append((r,c))
         return m
-
 
     # ----------------------------------------------
     def check_game(self,s):
@@ -409,7 +403,7 @@ class Othello(BoardGame):
         # flip 8 directions
         for ri,ci in direction:
             found_nx=False
-            l=[]
+            flip_positions = []
             # flip one direction
             for i in range(1,8):
                 a=r+ri*i
@@ -418,26 +412,25 @@ class Othello(BoardGame):
                     break
                 if found_nx:
                     if s.b[a][b]==s.x: 
-                        for li in l:
+                        for li in flip_positions:
                             f.append(li)
                         break 
                     elif s.b[a][b]==0:
                         break
                     else:
-                        l.append((a,b))
+                        flip_positions.append((a,b))
                 elif s.b[a][b]==nx: # found one
                         found_nx=True
-                        l.append((a,b))
+                        flip_positions.append((a,b))
                 else:
                     break
-        for ri,ci in f:
+        for ri,ci in flip_positions:
             s.b[ri,ci]=s.x
         
         s.x*=-1
         # determine who's turn in the next step of the game
         if len(self.get_valid_moves(s))==0:
             s.x*=-1
-
 
 #-------------------------------------------------------
 class Player(ABC):
@@ -481,8 +474,6 @@ class Player(ABC):
                 c: the column number of the next move, an integer scalar.
         '''
         pass
-
-
 
 #-------------------------------------------------------
 class DummyPlayer(Player):
@@ -529,8 +520,6 @@ class DummyPlayer(Player):
         r,c = m[-1]
         return r,c
 
-
-
 #-------------------------------------------------------------------------
 '''
     GO is a famous board game, very challenging problem in AI. 
@@ -558,7 +547,9 @@ class GO_state(GameState):
         super(GO_state, self).__init__(b,x)
         self.p = p
         self.a = a 
-        self.t = t 
+        self.t = t
+
+#-------------------------------------------------------------------------
 
 #-------------------------------------------------------
 class GO(BoardGame):
@@ -657,12 +648,12 @@ class GO(BoardGame):
           Returns: 
                 l: the number a liberties, an integer scaler.
         '''
-        l = set()
+        liberties = set()
         for r,c in g:
             for nr,nc in self.neighbors(r,c): 
-                if self.is_on_board(nr,nc) and b[nr,nc]==0 and ( (nr,nc) not in g ) and ( (nr,nc) not in l ):
-                    l.add((nr,nc))
-        return len(l)
+                if self.is_on_board(nr,nc) and b[nr,nc]==0 and ( (nr,nc) not in g ) and ( (nr,nc) not in liberties ):
+                    liberties.add((nr,nc))
+        return len(liberties)
 
     # ----------------------------------------------
     def remove_group(self,b,g):
@@ -715,15 +706,15 @@ class GO(BoardGame):
 
         # if suicide move without kill (not allowed)
         g = self.get_group(s.b,r,c,x)
-        l = self.get_liberties(s.b,g)
-        if l > 0:
+        liberties = self.get_liberties(s.b,g)
+        if liberties > 0:
             return True #  
         # if suicide move with kill (allowed) 
         for nr,nc in self.neighbors(r,c):
             if self.is_on_board(nr,nc) and s.b[nr,nc]==-x:
                 g = self.get_group(s.b,nr,nc)
-                l = self.get_liberties(s.b,g) 
-                if l==1: # can kill
+                liberties = self.get_liberties(s.b,g) 
+                if liberties == 1: # can kill
                     return True
         return False
 
@@ -771,13 +762,13 @@ class GO(BoardGame):
         '''
         find_x = True # whether or not need to search for x player's stone
         find_o = True# whether or not need to search for o player's stone
-        l = set()
+        liberties_set = set()
         for r,c in g:
             for nr,nc in self.neighbors(r,c): 
                 if not (find_x or find_o):
                     return 0
-                if self.is_on_board(nr,nc) and ((find_x and b[nr,nc]==1) or (find_o and b[nr,nc]==-1)) and ( (nr,nc) not in g ) and ( (nr,nc) not in l ):
-                    l.add((nr,nc))
+                if self.is_on_board(nr,nc) and ((find_x and b[nr,nc]==1) or (find_o and b[nr,nc]==-1)) and ( (nr,nc) not in g ) and ( (nr,nc) not in liberties_set ):
+                    liberties_set.add((nr,nc))
                     if  b[nr,nc] == 1:
                         find_x = False 
                     else:
@@ -808,16 +799,16 @@ class GO(BoardGame):
         t = np.sum(b==x)
         # check each empty crossing and see if it was surrounded by 'x' player's stones.
         rs,cs=np.where(b==0) 
-        l = set()
+        liberties_set = set()
         e = list(zip(rs,cs)) #empty slots
         for r,c in e:
-            if (r,c) in l:
+            if (r,c) in liberties_set:
                 continue
             # check if surrounded by 'x' player's stones only
             # find all the connected empty positions
             g = self.get_group(b,r,c)
             for z in g:
-                l.add(z)
+                liberties_set.add(z)
             # check if all surroundings are either wall or 'x' player's stones
             v = self.is_surrounded(b,g) 
             if v == x:
@@ -900,9 +891,9 @@ class GO(BoardGame):
                 if self.is_on_board(nr,nc) and s.b[nr,nc]==-x:
                     # compute the liberties of the group that point becomes to
                     g = self.get_group(s.b,nr,nc)
-                    l = self.get_liberties(s.b,g)
+                    liberties = self.get_liberties(s.b,g)
                     # if the liberties of a group becomes 0
-                    if l == 0:
+                    if liberties == 0:
                         # kill the group
                         self.remove_group(s.b,g)
                         if len(g)==1:

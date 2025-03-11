@@ -1,13 +1,16 @@
 import pygame
 import numpy as np
 import sys
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # Hide Pygame welcome message
 from pathlib import Path
-from Players.minimax import RandomPlayer 
-from Players.mcts import MCTSPlayer
-from Players.qfcnn import QFcnnPlayer
-from Players.policynn import PolicyNNPlayer
-from Players.valuenn import ValueNNPlayer
-from game import Othello 
+from ..Players.minimax import RandomPlayer 
+from ..Players.mcts import MCTSPlayer
+from ..Players.qfcnn import QFcnnPlayer
+from ..Players.policynn import PolicyNNPlayer
+from ..Players.valuenn import ValueNNPlayer
+from ..game import Othello 
+from . import game_utils as gu
 
 '''
     This is a demo for Othello game. You could play with the AI that you have built in mcts.
@@ -222,7 +225,7 @@ def run_a_game(p):
                     canPlay = False
                 e=pygame.event.Event(pygame.USEREVENT)
                 pygame.event.post(e)
-                print("X player chooses:",str(r),str(c))
+                gu.print_move("X", r, c, s.b, "othello")
 
         if event.type == pygame.USEREVENT and x== -1 and canPlay: # computer's turn to choose a move
             r,c = p.choose_a_move(g,s)
@@ -240,28 +243,41 @@ def run_a_game(p):
                 canPlay = False
             e=pygame.event.Event(pygame.USEREVENT)
             pygame.event.post(e)
-            print("O player chooses:",str(r),str(c))
+            gu.print_move("O", r, c, s.b, "othello")
     
         # update the UI display
         pygame.display.update()
 
 if __name__ == "__main__":
+    # Clear the terminal
+    gu.clear_screen()
+    
     if len(sys.argv)>1:
         arg=sys.argv[1]
         if arg=="mcts": # play with MCTS player
-            p =MCTSPlayer()
-            print('Now you are playing with Monte-Carlo Tree Search Player!')
-        elif arg=="qfcnn": # player with QFcnn player
+            p = MCTSPlayer()
+            ai_type = "Monte-Carlo Tree Search AI"
+        elif arg=="qfcnn": # play with QFCNN player
             p = QFcnnPlayer()
-            print('Now you are playing with QFcnn Player!')
-        elif arg=="policy": # player with PolicyNN player
+            ai_type = "Q-Learning Neural Network AI"
+        elif arg=="policy": # play with PolicyNN player
             p = PolicyNNPlayer()
-            print('Now you are playing with PolicyNN Player!')
-        else:
-            assert False # Incorrect AI name
-    else:
-        p= RandomPlayer() # default: random player
-        print('Now you are playing with Random Player!')
+            ai_type = "Policy Neural Network AI"
+        elif arg=="value": # play with ValueNN player
+            p = ValueNNPlayer()
+            ai_type = "Value Neural Network AI"
+        else: # play with Random player
+            p = RandomPlayer()
+            ai_type = "Random AI"
+    else: # play with Random player by default
+        p = RandomPlayer()
+        ai_type = "Random AI"
+    
+    gu.print_welcome("Othello", ai_type)
+    
+    # Print empty board at start
+    gu.print_othello_board(np.zeros((8, 8)))
+    
     run_a_game(p)
 
 

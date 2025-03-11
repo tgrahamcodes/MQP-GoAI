@@ -1,5 +1,7 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
+
 import pygame
-import numpy as np
 import sys
 from problem1 import RandomPlayer 
 from game import GO 
@@ -77,7 +79,6 @@ def map_mouse_to_board(x, y,n=Board_SIZE-1):
     column= (x-margin+w//2)//w 
     return row, column
 
-
 #---------------------------------------------
 def draw_board(win,g,s,n=Board_SIZE-1):
     '''
@@ -97,7 +98,6 @@ def draw_board(win,g,s,n=Board_SIZE-1):
                 pygame.draw.circle(win, xplayerColor, [a, b],w//2-2 )
             elif s.b[i,j]==-1:
                 pygame.draw.circle(win, oplayerColor, [a, b],w//2-2)
-
 
 #---------------------------------------------
 def draw_result(win,e):
@@ -145,16 +145,14 @@ def init_screen():
 
 
     # set icon
-    icon = pygame.image.load('o.png')
+    icon = pygame.image.load('./Sample Code/o.png')
     pygame.display.set_icon(icon)
 
     # Title
     pygame.display.set_caption("GO, press key 'p' to pass")
     pygame.font.init()
-    myFont = pygame.font.SysFont('Tahoma', gameSize // 3)
 
     return win
-
 
 #---------------------------------------------
 def run_a_game(p):

@@ -4,9 +4,9 @@ import os
 import torch
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
-from Players.minimax import RandomPlayer, MiniMaxPlayer, GameState
-from Players.valuenn import ValueNN, ValueNNPlayer
-from game import Othello, TicTacToe, GO
+from ..Players.minimax import RandomPlayer, MiniMaxPlayer
+from ..Players.valuenn import ValueNN, ValueNNPlayer
+from ..game import GameState, Othello, TicTacToe, GO
 
 #-------------------------------------------------------------------------
 def test_python_version():

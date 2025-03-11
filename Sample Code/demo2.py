@@ -1,5 +1,7 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
+
 import pygame
-import numpy as np
 import sys
 from problem1 import RandomPlayer 
 from game import Othello 
@@ -141,16 +143,14 @@ def init_screen():
 
 
     # set icon
-    icon = pygame.image.load('o.png')
+    icon = pygame.image.load('./Sample Code/o.png')
     pygame.display.set_icon(icon)
 
     # Title
     pygame.display.set_caption("Othello")
     pygame.font.init()
-    myFont = pygame.font.SysFont('Tahoma', gameSize // 3)
 
     return win
-
 
 #---------------------------------------------
 def run_a_game(p):
@@ -245,10 +245,10 @@ if __name__ == "__main__":
         # play with MCTS player
         from problem2 import MCTSPlayer
         p =MCTSPlayer()
-        print('Now you are playing with Monte-Carlo Tree Search Player!')
+        print('You are playing with Monte-Carlo Tree Search Player!')
     else:
         p= RandomPlayer() # default: random player
-        print('Now you are playing with Random Player!')
+        print('\n\033[92mYou are playing with Random Player!\033[0m\n')
     run_a_game(p)
 
 

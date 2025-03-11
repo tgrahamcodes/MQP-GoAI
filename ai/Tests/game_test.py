@@ -1,17 +1,11 @@
-from game import *
+from ..game import *
 import numpy as np
 import sys
 import time
 
-
 #-------------------------------------------------------------------------
 def test_python_version():
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
-
-
-
-
-
 
 #-------------------------------------------------------------------------
 def test_initial_game_state():
@@ -799,12 +793,12 @@ def test_go_speed():
     '''go_speed()'''
     start_time = time.time()
     p = DummyPlayer()
-    n_games =10 
+    n_games = 10 
     for _ in range(n_games):
         g=GO(max_game_length=150)
         g.run_a_game(p,p)
     end_time = time.time() - start_time 
-    print(n_games/end_time)
-    assert False
-    #0.88 games per second
+    games_per_second = n_games/end_time
+    print(f"Games per second: {games_per_second}")
+    assert games_per_second > 0.1  # Ensure we can play at least 0.1 games per second
 

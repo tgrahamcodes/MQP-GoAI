@@ -229,25 +229,25 @@ class BoardGame(ABC):
             assert self.check_valid_move(s,r,c) # the move must be valid
             self.apply_a_move(s,r,c) # apply the move and update game state
 
-        from Players.mcts import MCTSPlayer
+        from .Players.mcts import MCTSPlayer
         if isinstance(x_player, MCTSPlayer) and x_player.mem.file != 'testing':
             x_player.mem.export_mem()
         if isinstance(o_player, MCTSPlayer) and x_player.mem.file != 'testing':
             o_player.mem.export_mem()
             
-        from Players.qfcnn import QFcnnPlayer
+        from .Players.qfcnn import QFcnnPlayer
         if isinstance(x_player, QFcnnPlayer):
             x_player.model.save_model(x_player.file)
         if isinstance(o_player, QFcnnPlayer):
             o_player.model.save_model(o_player.file)
 
-        from Players.policynn import PolicyNNPlayer
+        from .Players.policynn import PolicyNNPlayer
         if isinstance(x_player, PolicyNNPlayer):
             x_player.model.save_model(x_player.file)
         if isinstance(o_player, PolicyNNPlayer):
             o_player.model.save_model(o_player.file)
 
-        from Players.valuenn import ValueNNPlayer
+        from .Players.valuenn import ValueNNPlayer
         if isinstance(x_player, ValueNNPlayer):
             x_player.model.save_model(x_player.file)
         if isinstance(o_player, ValueNNPlayer):
@@ -290,6 +290,7 @@ class TicTacToe(BoardGame):
         super(TicTacToe, self).__init__()
         self.N = 3
         self.output_size = self.N**2
+        self.input_size = self.N**2
         self.channels = 3
 
     # ----------------------------------------------
@@ -995,19 +996,26 @@ class GO(BoardGame):
         if (s.p is not None) and r == s.p[0] and c == s.p[1]:
             return False
 
-        # if suicide move without kill (not allowed)
-        g = self.get_group(s.b,r,c,x)
-        l = self.get_liberties(s.b,g)
-        if l > 0:
-            return True #  
-        # if suicide move with kill (allowed) 
+        # Create a temporary board to simulate the move
+        temp_board = s.b.copy()
+        temp_board[r,c] = x
+
+        # Check if the move would result in any captures
+        captures = False
         for nr,nc in self.neighbors(r,c):
-            if self.is_on_board(nr,nc) and s.b[nr,nc]==-x:
-                g = self.get_group(s.b,nr,nc)
-                l = self.get_liberties(s.b,g) 
-                if l==1: # can kill
-                    return True
-        return False
+            if self.is_on_board(nr,nc) and temp_board[nr,nc]==-x:
+                g = self.get_group(temp_board,nr,nc)
+                l = self.get_liberties(temp_board,g)
+                if l == 0:
+                    captures = True
+                    break
+
+        # Check if the group formed by the new stone would have liberties
+        g = self.get_group(temp_board,r,c,x)
+        l = self.get_liberties(temp_board,g)
+        
+        # Move is valid if it either has liberties or captures opponent stones
+        return l > 0 or captures
 
     # ----------------------------------------------
     def get_valid_moves(self, s):

@@ -1,5 +1,7 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
+
 import pygame
-import numpy as np
 import sys
 from problem1 import TicTacToe, RandomPlayer 
 
@@ -27,8 +29,8 @@ lineSize = 5
 backgroundColor = (0, 0, 0)
 
 # load image for stones
-x_img = pygame.image.load('x.png')
-o_img = pygame.image.load('o.png')
+x_img = pygame.image.load('./Sample Code/x.png')
+o_img = pygame.image.load('./Sample Code/o.png')
 
 #---------------------------------------------
 def map_mouse_to_board(x, y):
@@ -41,14 +43,19 @@ def map_mouse_to_board(x, y):
             row: row number
             column: column number
     '''
-    if x < gameSize / 3 + margin: column = 0
-    elif gameSize / 3+margin <= x < (gameSize / 3) * 2+margin: column = 1
-    else: column = 2
-    if y < gameSize / 3 + margin: row = 0
-    elif gameSize / 3 + margin <= y < (gameSize / 3) * 2 + margin:row = 1
-    else:row = 2
+    if x < gameSize / 3 + margin:
+        column = 0
+    elif gameSize / 3 + margin <= x < (gameSize / 3) * 2 + margin:
+        column = 1
+    else:
+        column = 2
+    if y < gameSize / 3 + margin:
+        row = 0
+    elif gameSize / 3 + margin <= y < (gameSize / 3) * 2 + margin:
+        row = 1
+    else:
+        row = 2
     return row, column
-
 
 #---------------------------------------------
 def draw_board(win,s):
@@ -60,8 +67,9 @@ def draw_board(win,s):
     '''
     for y in range(3):
         for x in range(3):
-            picker = lambda xx,oo: xx if s[y][x] == 1 else oo if s[y][x] == -1 else pygame.Surface((0, 0))
-            win.blit(picker(x_img, o_img), (x * (gameSize // 3) + margin + 17,15+ y * (gameSize // 3) + margin) )
+            def picker(xx, oo):
+                return xx if s[y][x] == 1 else oo if s[y][x] == -1 else pygame.Surface((0, 0))
+            win.blit(picker(x_img, o_img), (x * (gameSize // 3) + margin + 17, 15 + y * (gameSize // 3) + margin))
 
 #---------------------------------------------
 def draw_lines(win):
@@ -126,13 +134,12 @@ def init_screen():
 
 
     # set icon
-    icon = pygame.image.load('x.png')
+    icon = pygame.image.load('./Sample Code/x.png')
     pygame.display.set_icon(icon)
 
     # Title
     pygame.display.set_caption("Tic Tac Toe")
     pygame.font.init()
-    myFont = pygame.font.SysFont('Tahoma', gameSize // 3)
 
     # draw empty board
     draw_empty_board(win)
@@ -241,6 +248,6 @@ if __name__ == "__main__":
             assert False # Incorrect AI name
     else:
         p= RandomPlayer() # default: random player
-        print('Now you are playing with Random Player!')
+        print('\n\033[92mYou are playing with Random Player!\033[0m\n')
     run_a_game(p)
 

@@ -1,12 +1,10 @@
 #-------------------------------------------------------------------------
 import numpy as np
 import pickle
-import sys
-import os
 from pathlib import Path
 from .minimax import RandomPlayer, Node
 from .memory import MemoryDict
-from game import BoardGame, Player, TicTacToe, Othello, GO
+from ..game import Player, GO
 #-------------------------------------------------------------------------
 '''
     Problem 2: Monte Carlo Tree Search (MCTS) 
@@ -237,7 +235,7 @@ class MCNode(Node):
                         |     0, 0,-1        |--> Grand Child B4 (v=1,N=1)
                         |
          Root Node ---> |--> Child Node C -->|--> Grand Child C1 (v=0,N=1)
-          1,-1, 1 (v=19)|     1,-1, 1 (v=-3) |--> Grand Child C2 (v=0,N=1)
+          1,-1, 1 (v=20)|     1,-1, 1 (v=-3) |--> Grand Child C2 (v=0,N=1)
           0, 0, 0 (N=54)|     0, 0, 1 (N=7)  |--> Grand Child C3 (v=0,N=1)
           0, 0,-1       |     0, 0,-1        |--> Grand Child C4 (v=-3,N=3)
                         |
@@ -430,9 +428,9 @@ class MCNode(Node):
         # otherwise: select a child node (c) of the root node
         c = self.select_a_child() 
         #            recursively select the children nodes of node (c).
-        l = c.selection(depth+1)
+        leaf_node = c.selection(depth+1)
         #########################################
-        return l
+        return leaf_node
 
 
     ''' TEST: Now you can test the correctness of your code above by typing `nosetests -v test2.py:test_selection' in the terminal.  '''
@@ -761,7 +759,7 @@ class MCTSPlayer(Player):
         '''
         #########################################
         ## INSERT YOUR CODE HERE
-        if self.mem.file == None:
+        if self.mem.file is None:
             self.mem.select_file(g)
             self.mem.load_mem()
 

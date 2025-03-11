@@ -1,11 +1,9 @@
 #-------------------------------------------------------------------------
 import numpy as np
 import pickle
-import sys
-import os
 from pathlib import Path
 from .memory import MemoryDict
-from game import GameState, Player
+from ai.game import Player
 #-------------------------------------------------------------------------
 '''
     Problem 1: TicTacToe and MiniMax AI player 

@@ -1,17 +1,11 @@
-from game import *
+from game import Othello, GameState, DummyPlayer, GO, GO_state
 import numpy as np
 import sys
 import time
 
-
 #-------------------------------------------------------------------------
 def test_python_version():
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
-
-
-
-
-
 
 #-------------------------------------------------------------------------
 def test_initial_game_state():
@@ -29,7 +23,6 @@ def test_initial_game_state():
 
     assert np.allclose(s.b,n) 
     assert s.x==1
-
 
 #-------------------------------------------------------------------------
 def test_check_valid_move():
@@ -91,7 +84,6 @@ def test_check_valid_move():
     assert g.check_valid_move(s,2,7) 
     assert g.check_valid_move(s,7,2) 
 
-
     b=np.array([[ 1,-1,-1,-1,-1,-1,-1, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -102,7 +94,6 @@ def test_check_valid_move():
                 [ 0, 0, 0, 0, 0, 0, 0, 0]])
     s = GameState(b,x=1)
     assert g.check_valid_move(s,0,7) 
-
 
 #-------------------------------------------------------------------------
 def test_get_valid_moves():
@@ -119,7 +110,7 @@ def test_get_valid_moves():
 
     s = GameState(b,x=1)# "X" player's turn
     m=g.get_valid_moves(s) 
-    assert type(m)==list
+    assert type(m) is list
     assert len(m)==5
     m.sort()
     assert m[0]== (2,2)
@@ -127,7 +118,6 @@ def test_get_valid_moves():
     assert m[2]== (2,4)
     assert m[3]== (2,5)
     assert m[4]== (2,6)
-
 
     b=np.array([[ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -140,7 +130,7 @@ def test_get_valid_moves():
 
     s = GameState(b,x=-1)# "O" player's turn
     m=g.get_valid_moves(s) 
-    assert type(m)==list
+    assert type(m) is list
     assert len(m)==3
     m.sort()
     assert m[0]== (3,5)
@@ -167,7 +157,6 @@ def test_get_valid_moves():
     assert m[3]== (2,5)
     assert m[4]== (2,6)
     assert m[5]== (3,2)
-
 
 #-------------------------------------------------------------------------
 def test_check_game():
@@ -197,9 +186,6 @@ def test_check_game():
     e=g.check_game(s) 
     assert e==0
 
-
-
-
 #-------------------------------------------------------------------------
 def test_apply_a_move():
     '''apply_a_move()'''
@@ -226,8 +212,6 @@ def test_apply_a_move():
     assert np.allclose(s.b,n)
     assert s.x==-1
 
-
-
 #-------------------------------------------------------------------------
 def test_dummy_choose_a_move():
     '''dummy_choose_a_move()'''
@@ -245,7 +229,6 @@ def test_dummy_choose_a_move():
     r,c=p.choose_a_move(g,s)
     assert r==0
     assert c==4
-
 
 #-------------------------------------------------------------------------
 def test_get_move_state_pairs():
@@ -288,7 +271,6 @@ def test_get_move_state_pairs():
                  [ 0, 0, 0, 0, 0, 0, 0, 0]])
     assert np.allclose(s2.b,b2)
 
-
 #-------------------------------------------------------------------------
 def test_run_a_game():
     '''run_a_game()'''
@@ -308,8 +290,6 @@ def test_run_a_game():
         e = g.run_a_game(p,p,s=s)
         assert e==-1
 
-
-
     b=np.array([[ 0, 0, 0, 0,-1, 1,-1, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
                 [ 0, 0, 0, 0, 0, 0, 0, 0],
@@ -322,7 +302,6 @@ def test_run_a_game():
     for i in range(10):
         e = g.run_a_game(p,p,s=s)
         assert e==1
-
 
 #-------------------------------------------------------------------------
 def test_go_initial_game_state():
@@ -384,7 +363,6 @@ def test_go_get_group():
     assert (0,1) in l
     assert (0,0) in l
 
-
     s=np.array([[ 1, 1, 0],
                 [ 1, 1, 1],
                 [ 1, 0, 0]])
@@ -405,8 +383,6 @@ def test_go_get_group():
     assert (0,0) in l
     assert (1,0) in l
     assert (2,0) in l
-
-
 
 #-------------------------------------------------------------------------
 def test_go_get_liberties():
@@ -462,16 +438,12 @@ def test_go_get_liberties():
     l=g.get_liberties(s,gr)
     assert l==1 
 
-
-
     s=np.array([[ 0, 0, 0],
                 [ 0, 0, 0],
                 [ 0, 0, 1]])
     gr = g.get_group(s,2,2)
     l=g.get_liberties(s,gr)
     assert l==2 
-
-
 
     s=np.array([[ 0, 0, 0],
                 [ 0, 0, 1],
@@ -493,8 +465,6 @@ def test_go_get_liberties():
     gr = g.get_group(s,1,0)
     l=g.get_liberties(s,gr)
     assert l==3 
-
-
 
 #-------------------------------------------------------------------------
 def test_go_remove_group():
@@ -562,10 +532,10 @@ def test_go_get_valid_moves():
 
     s = GO_state(b,x=1) 
     m=g.get_valid_moves(s) # "X" player's turn
-    assert type(m)==list
+    assert type(m) is list
     assert len(m)==6
-    assert m[0][0]==None
-    assert m[0][1]==None
+    assert m[0][0] is None
+    assert m[0][1] is None
     m= m[1:]
     m.sort()
     assert m[0]== (0,0)
@@ -577,9 +547,8 @@ def test_go_get_valid_moves():
     s = GO_state(b,x=-1) 
     m=g.get_valid_moves(s) # "O" player's turn
     assert len(m)==1
-    assert m[0][0]==None
-    assert m[0][1]==None
-
+    assert m[0][0] is None
+    assert m[0][1] is None
 
     g=GO(board_size=4)
     b=np.array([[ 0, 1,-1, 0],
@@ -589,21 +558,18 @@ def test_go_get_valid_moves():
     s = GO_state(b,x=-1) 
     m=g.get_valid_moves(s) # "O" player's turn
     assert len(m)==4
-    assert m[0][0]==None
-    assert m[0][1]==None
+    assert m[0][0] is None
+    assert m[0][1] is None
     m= m[1:]
     m.sort()
     assert m[0]== (0,3)
     assert m[1]== (1,1)
     assert m[2]== (2,3)
 
-
     g=GO(board_size=4)
     s = g.initial_game_state()
     m=g.get_valid_moves(s)
     assert len(m)==17
-
-
 
 #-------------------------------------------------------------------------
 def test_go_apply_a_move():
@@ -621,7 +587,6 @@ def test_go_apply_a_move():
                 [ 0, 1, 0]])
     assert np.allclose(s.b,n) 
     assert s.p == (1,1)
-
 
     g=GO(board_size=4)
     b=np.array([[ 0, 0, 0, 0],
@@ -674,7 +639,6 @@ def test_go_apply_a_move():
     g.apply_a_move(s,0,0)
     assert s.p is None
 
-
 #-------------------------------------------------------------------------
 def test_go_is_surrounded():
     '''go_is_surrounded()'''
@@ -701,7 +665,6 @@ def test_go_is_surrounded():
     l = g.get_group(b,1,1) 
     r=g.is_surrounded(b,l)
     assert r==0
-
 
     g=GO(board_size=4)
     b=np.array([[-1, 1, 0, 0],
@@ -740,7 +703,6 @@ def test_go_compute_score():
     t=g.compute_score(b,x=1)
     assert t==9
 
-
     b=np.array([[ 1, 1, 1],
                 [ 1, 0,-1],
                 [ 1, 1, 1]])
@@ -762,7 +724,6 @@ def test_go_compute_score():
     assert t==3
     t=g.compute_score(b,-1)
     assert t==3
-
 
 #-----------------------------------------------------------
 def test_go_check_game():
@@ -791,8 +752,7 @@ def test_go_check_game():
 
     s = GO_state(b,a=1) 
     e=g.check_game(s)
-    assert e==None
-
+    assert e is None
 
 #-----------------------------------------------------------
 def test_go_speed():
@@ -807,4 +767,3 @@ def test_go_speed():
     print(n_games/end_time)
     assert False
     #0.88 games per second
-

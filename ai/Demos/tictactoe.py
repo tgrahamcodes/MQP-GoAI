@@ -1,13 +1,18 @@
 import pygame
-import numpy as np
 import sys
+import os
+from colorama import init, Fore, Back, Style
+init(autoreset=True)  # Initialize colorama
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # Hide Pygame welcome message
 from pathlib import Path
-from Players.minimax import RandomPlayer, MiniMaxPlayer
-from Players.mcts import MCTSPlayer
-from Players.qfcnn import QFcnnPlayer
-from Players.policynn import PolicyNNPlayer
-from Players.valuenn import ValueNNPlayer
-from game import TicTacToe 
+from ..Players.minimax import RandomPlayer, MiniMaxPlayer
+from ..Players.mcts import MCTSPlayer
+from ..Players.qfcnn import QFcnnPlayer
+from ..Players.policynn import PolicyNNPlayer
+from ..Players.valuenn import ValueNNPlayer
+from ..game import TicTacToe 
+import numpy as np
+from . import game_utils as gu
 
 '''
     This is a demo for TicTacToe game. You could play with the AI that you have built in minimax and mcts.
@@ -49,26 +54,34 @@ def map_mouse_to_board(x, y):
             row: row number
             column: column number
     '''
-    if x < gameSize / 3 + margin: column = 0
-    elif gameSize / 3+margin <= x < (gameSize / 3) * 2+margin: column = 1
-    else: column = 2
-    if y < gameSize / 3 + margin: row = 0
-    elif gameSize / 3 + margin <= y < (gameSize / 3) * 2 + margin:row = 1
-    else:row = 2
+    if x < gameSize / 3 + margin:
+        column = 0
+    elif gameSize / 3 + margin <= x < (gameSize / 3) * 2 + margin:
+        column = 1
+    else: 
+        column = 2
+    if y < gameSize / 3 + margin:
+        row = 0
+    elif gameSize / 3 + margin <= y < (gameSize / 3) * 2 + margin:
+        row = 1
+    else:
+        row = 2
     return row, column
 
 
 #---------------------------------------------
-def draw_board(win,s):
+def draw_board(win,g,s):
     '''
         Draw the board based upon the game state
         Inputs:
             win: the window to draw in
+            g: the game object
             s: the game state
     '''
     for y in range(3):
         for x in range(3):
-            picker = lambda xx,oo: xx if s[y][x] == 1 else oo if s[y][x] == -1 else pygame.Surface((0, 0))
+            def picker(xx, oo):
+                return xx if s.b[y][x] == 1 else oo if s.b[y][x] == -1 else pygame.Surface((0, 0))
             win.blit(picker(x_img, o_img), (x * (gameSize // 3) + margin + 17,15+ y * (gameSize // 3) + margin) )
 
 #---------------------------------------------
@@ -139,7 +152,6 @@ def init_screen():
     # Title
     pygame.display.set_caption("Tic Tac Toe")
     pygame.font.init()
-    myFont = pygame.font.SysFont('Tahoma', gameSize // 3)
 
     # draw empty board
     draw_empty_board(win)
@@ -203,9 +215,7 @@ def run_a_game(p):
                 x=s.x
 
                 # draw the board
-                draw_board(win,s.b)
-                print("X player chooses:",str(r),str(c))
-
+                draw_board(win,g,s)
                 # check if the game has ended already
                 e = g.check_game(s) 
                 if e is not None:
@@ -213,6 +223,7 @@ def run_a_game(p):
                     canPlay = False
                 e=pygame.event.Event(pygame.USEREVENT)
                 pygame.event.post(e)
+                gu.print_move("X", r, c, s.b, "tictactoe")
 
         if event.type == pygame.USEREVENT and x== -1 and canPlay: # computer's turn to choose a move
             r,c = p.choose_a_move(g,s)
@@ -222,40 +233,79 @@ def run_a_game(p):
             g.apply_a_move(s,r,c)
             x=s.x
             # draw the board
-            draw_board(win,s.b)
-            print("O player chooses:",str(r),str(c))
-
+            draw_board(win,g,s)
             # check if the game has ended already
             e = g.check_game(s) 
             if e is not None:
                 draw_result(win,e)
                 canPlay = False
+            e=pygame.event.Event(pygame.USEREVENT)
+            pygame.event.post(e)
+            gu.print_move("O", r, c, s.b, "tictactoe")
     
         # update the UI display
         pygame.display.update()
 
+def print_board_state(board):
+    """Print the current board state in color"""
+    print("\n     0   1   2  ")
+    print("   +---+---+---+")
+    for i in range(3):
+        print(f" {i} |", end="")
+        for j in range(3):
+            if board[i][j] == 1:
+                print(f" {Fore.GREEN}X{Style.RESET_ALL} |", end="")
+            elif board[i][j] == -1:
+                print(f" {Fore.RED}O{Style.RESET_ALL} |", end="")
+            else:
+                print("   |", end="")
+        print("\n   +---+---+---+")
+
+def print_move(player, r, c, board):
+    """Print moves in a more visible format with colors"""
+    if player == "X":
+        print(f"\n{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}🎮 Your move (X): row={r}, col={c}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
+    else:
+        print(f"\n{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
+        print(f"{Fore.RED}🤖 Computer's move (O): row={r}, col={c}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}{'=' * 40}{Style.RESET_ALL}")
+    
+    print_board_state(board)
+
 if __name__ == "__main__":
+    # Clear the terminal
+    gu.clear_screen()
+    
     if len(sys.argv)>1:
         arg=sys.argv[1]
         if arg=="mcts": # play with MCTS player
-            p =MCTSPlayer()
-            print('Now you are playing with Monte-Carlo Tree Search Player!')
-        elif arg=="minimax": # player with MiniMax player
-            p = MiniMaxPlayer()
-            print('Now you are playing with MiniMax Player!')
-        elif arg=="qfcnn": # player with QFcnn player
+            p = MCTSPlayer()
+            ai_type = "Monte-Carlo Tree Search AI"
+        elif arg=="qfcnn": # play with QFCNN player
             p = QFcnnPlayer()
-            print('Now you are playing with QFcnn Player!')
-        elif arg=="policy": # player with PolicyNN player
+            ai_type = "Q-Learning Neural Network AI"
+        elif arg=="policy": # play with PolicyNN player
             p = PolicyNNPlayer()
-            print('Now you are playing with PolicyNN Player!')
-        elif arg=="value": # player with ValueNN player
+            ai_type = "Policy Neural Network AI"
+        elif arg=="value": # play with ValueNN player
             p = ValueNNPlayer()
-            print('Now you are palying with ValueNN Player!')
-        else:
-            assert False # Incorrect AI name
-    else:
-        p= RandomPlayer() # default: random player
-        print('Now you are playing with Random Player!')
+            ai_type = "Value Neural Network AI"
+        elif arg=="minimax": # play with MiniMax player
+            p = MiniMaxPlayer()
+            ai_type = "MiniMax AI"
+        else: # play with Random player
+            p = RandomPlayer()
+            ai_type = "Random AI"
+    else: # play with Random player by default
+        p = RandomPlayer()
+        ai_type = "Random AI"
+    
+    gu.print_welcome("TicTacToe", ai_type)
+    
+    # Print empty board at start
+    gu.print_tictactoe_board(np.zeros((3, 3)))
+    
     run_a_game(p)
 

@@ -65,6 +65,8 @@ Ensure you have **Python 3.6+** installed. Install dependencies using:
 
 ```bash
 pip install -r requirements.txt
+pip3 install pygame
+pip3 install colorama
 ```
 
 ### **Run AI Training**
@@ -73,15 +75,74 @@ To train the AI using Reinforcement Learning:
 python training/train.py
 ```
 
-To test AI performance in **Go**:
+### **Run Games**
+#### TicTacToe
 ```bash
-python src/game/go.py
+# Play against Random AI (default)
+python3 -m ai.Demos.tictactoe
+
+# Play against Monte-Carlo Tree Search AI
+python3 -m ai.Demos.tictactoe mcts
+
+# Play against MiniMax AI
+python3 -m ai.Demos.tictactoe minimax
+
+# Play against Q-Learning Neural Network AI
+python3 -m ai.Demos.tictactoe qfcnn
+
+# Play against Policy Neural Network AI
+python3 -m ai.Demos.tictactoe policy
+
+# Play against Value Neural Network AI
+python3 -m ai.Demos.tictactoe value
+```
+
+#### Go
+```bash
+# Play against Random AI (default)
+python3 -m ai.Demos.go
+
+# Play against Monte-Carlo Tree Search AI
+python3 -m ai.Demos.go mcts
+
+# Play against Q-Learning Neural Network AI
+python3 -m ai.Demos.go qfcnn
+
+# Play against Policy Neural Network AI
+python3 -m ai.Demos.go policy
+
+# Play against Value Neural Network AI
+python3 -m ai.Demos.go value
+```
+
+#### Othello
+```bash
+# Play against Random AI (default)
+python3 -m ai.Demos.othello
+
+# Play against Monte-Carlo Tree Search AI
+python3 -m ai.Demos.othello mcts
+
+# Play against Q-Learning Neural Network AI
+python3 -m ai.Demos.othello qfcnn
+
+# Play against Policy Neural Network AI
+python3 -m ai.Demos.othello policy
+
+# Play against Value Neural Network AI
+python3 -m ai.Demos.othello value
 ```
 
 To run **unit tests**:
 ```bash
 pytest tests/
 ```
+
+### **Game Controls**
+- Click on a cell to make your move
+- Press F to restart the game
+- Press ESC to quit
+- In Go, press P to pass your turn
 
 ---
 

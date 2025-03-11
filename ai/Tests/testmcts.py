@@ -2,9 +2,9 @@ import numpy as np
 import sys
 import os
 from pathlib import Path
-from Players.mcts import *
-from Players.minimax import MiniMaxPlayer, GameState
-from game import Othello, TicTacToe
+from ..Players.mcts import *
+from ..Players.minimax import MiniMaxPlayer
+from ..game import GameState, Othello, TicTacToe
 
 '''
     Unit test 2:
@@ -1189,13 +1189,19 @@ def test_get_node():
 
 
 #-------------------------------------------------------------------------
+def get_test_memory_path():
+    memory_dir = Path(__file__).parents[1].joinpath('Players/Memory')
+    if not memory_dir.is_dir():
+        memory_dir.mkdir(parents=True)
+    return str(memory_dir.joinpath('test_mcts.p'))
+
 def test_MCTS_memory():
-    '''MCTS memory'''
+    '''MCTS_memory'''
     #---------------------
     # Game: TicTacToe
     g = TicTacToe()  # game 
     p = MCTSPlayer()
-    p.mem.file = 'testing'
+    p.mem.file = get_test_memory_path()
     assert isinstance(p.mem, MCMemory)
 
     #-------------------------

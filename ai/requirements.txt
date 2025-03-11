@@ -1,6 +1,5 @@
 pygame
 numpy
 nose
-pickle
 pathlib
 torch

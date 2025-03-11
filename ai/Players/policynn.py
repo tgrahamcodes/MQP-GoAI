@@ -6,8 +6,8 @@ from torch.distributions import Categorical
 from math import sqrt
 from pathlib import Path
 from .pnet import PNet
-from .minimax import Node, GameState
-from game import Player, GO, GO_state, Othello, TicTacToe
+from .minimax import Node
+from ..game import Player, GO, GO_state, Othello, TicTacToe, GameState
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
@@ -36,7 +36,7 @@ class PolicyNN(PNet):
 
     def adjust_logit(self, x, empty, banned):
         for i in range(len(empty[0])):
-            if empty[0][i] == 0 or (banned and banned[0][i] == 1):
+            if empty[0][i] == 0 or (banned is not None and banned[0][i] == 1):
                 x[0][i] -= 1000 
         return x
 
@@ -93,8 +93,8 @@ class PolicyNNPlayer(Player):
 
         if isinstance(g, GO):
             banned = np.zeros_like(s.b)
-            if s.p:
-                banned[pos[0]][pos[1]] = 1
+            if s.p is not None:
+                banned[s.p[0]][s.p[1]] = 1
             states = torch.Tensor([
                 [player,
                 opponent,

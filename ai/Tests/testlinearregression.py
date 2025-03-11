@@ -9,6 +9,10 @@ from os import path
 from pathlib import Path
 from torch.autograd import Variable
 from torch.utils.data import DataLoader, Dataset
+
+def get_memory_path(filename):
+    return str(Path(__file__).parents[1].joinpath('Players/Memory', filename))
+
 #-------------------------------------------------------------------------
 def test_python_version():
     assert sys.version_info[0]==3 # require python 3 (instead of python 2)
@@ -61,8 +65,9 @@ def test_data_save():
 
     # Instatiating the model
     model = LinearRegression(1, 1)
-    model.file = 'Players/Memory/MM_LinearReg.p'
-    model.save('Players/Memory/MM_LinearReg.p')
+    model_path = get_memory_path('MM_LinearReg.p')
+    model.file = model_path
+    model.save(model_path)
 
     # Asserting the model is non null
     assert (model and model.lin)
@@ -71,17 +76,17 @@ def test_data_save():
     assert (type(model) == LinearRegression)
 
     # Asserting the path is correct for the file to be saved
-    assert (path.exists('Players/Memory/MM_LinearReg.p'))
-    assert Path(__file__).parents[1].joinpath('Players/Memory/MM_LinearReg.p')
+    assert (path.exists(model_path))
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
 def test_data_load():
     # Instatiating the model
     model = LinearRegression(1,1)
-    model.load('Players/Memory/MM_LinearReg.p')
-    model.file = 'Players/Memory/MM_LinearReg.p'
-    assert (path.exists('Players/Memory/MM_LinearReg.p'))
+    model_path = get_memory_path('MM_LinearReg.p')
+    model.load(model_path)
+    model.file = model_path
+    assert (path.exists(model_path))
     assert (model.lin.state_dict)
     assert (model.lin.weight.data)
     assert (model.lin.bias)
@@ -110,17 +115,18 @@ def test_data_save_and_load():
 
     # Instatiating the model and saving it
     model = LinearRegression(1, 1)
-    model.file =  'Players/Memory/MM_LinearReg.p'
-    model.save('Players/Memory/MM_LinearReg.p')
+    model_path = get_memory_path('MM_LinearReg.p')
+    model.file = model_path
+    model.save(model_path)
 
     # Loading the model that was saved
     newModel = LinearRegression(1,1)
-    newModel.file = 'Players/Memory/MM_LinearReg.p'
-    newModel.load('Players/Memory/MM_LinearReg.p')
+    newModel.file = model_path
+    newModel.load(model_path)
 
     newerModel = LinearRegression(2,2)
     newerModel.lin.weight = torch.nn.Parameter(torch.Tensor(4))
-    newerModel.save('Players/Memory/MM_LinearReg2.p')
+    newerModel.save(get_memory_path('MM_LinearReg2.p'))
     
    # print("Model's state_dict:")
    # for param_tensor in newerModel.lin.state_dict():
@@ -142,7 +148,7 @@ def test_data_save_and_load():
     assert (type(model) == LinearRegression)
 
     # Asserting the path exists for the Memory file
-    assert (path.exists('Players/Memory/MM_LinearReg.p'))
+    assert (path.exists(model_path))
     assert Path(__file__).parents[1].joinpath('Players/Memory/MM_LinearReg.p')
 #-------------------------------------------------------------------------
 

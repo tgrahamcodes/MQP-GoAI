@@ -6,8 +6,8 @@ import math
 import random
 from pathlib import Path
 from .neuralnet import NeuralNet
-from .minimax import Node, GameState
-from game import Player, GO, GO_state, Othello, TicTacToe
+from .minimax import Node
+from ..game import Player, GO, GO_state, Othello, TicTacToe, GameState
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------

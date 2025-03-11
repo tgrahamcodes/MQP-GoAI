@@ -5,7 +5,7 @@ import torch
 from pathlib import Path
 from .minimax import Node
 from .neuralnet import NeuralNet
-from game import Player, GO, Othello, TicTacToe
+from ..game import Player, GO, Othello, TicTacToe
 #-------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------
@@ -13,8 +13,9 @@ class QFcnn(NeuralNet):
 
     def __init__(self, size_in):
         super().__init__()
-        self.hidden = nn.Linear(size_in, size_in)
-        self.output = nn.Linear(size_in, 1)
+        # For TicTacToe: 9 board positions + 1 for player turn = 10 inputs
+        self.hidden = nn.Linear(10, 10)
+        self.output = nn.Linear(10, 1)
         self.relu = nn.ReLU()
 
     def forward(self, states):
@@ -66,9 +67,9 @@ class QFcnnPlayer(Player):
                 state.append(0 if s.p == None else len(s.p))
                 state.append(s.a)
                 state.append(s.t)
-            s = torch.Tensor(state)
+            state = torch.Tensor(state).unsqueeze(0)  # Add batch dimension
             # for each next move m, predict and append result
-            tensor = self.model(s)
+            tensor = self.model(state)
             v.append(float(tensor.detach().numpy()))
             c.append(m)
         # get index of max predicted value and return move

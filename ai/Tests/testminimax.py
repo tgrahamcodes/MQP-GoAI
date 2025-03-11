@@ -2,8 +2,8 @@ import copy
 import numpy as np
 import sys
 import os
-from Players.minimax import *
-from game import GameState, TicTacToe, Othello, GO_state, GO
+from ..Players.minimax import *
+from ..game import GameState, TicTacToe, Othello, GO_state, GO
 
 '''
     Unit test 1:
