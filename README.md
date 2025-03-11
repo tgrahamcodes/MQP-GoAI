@@ -10,12 +10,12 @@ GoAI is an artificial intelligence project implementing **Deep Reinforcement Lea
 This project was developed as part of a **Master Qualifying Project at Worcester Polytechnic Institute (WPI)** by **Esteban Aranda** and **Thomas Graham**, under the advisement of **Professor Xiangnan Kong** and **Professor Yanhua Li**.
 
 ## **Key Achievements**
-✅ **Multi-Level AI Training:** The AI evolved from **Tic-Tac-Toe** to **Othello** and then to **Go**, testing each algorithm's efficiency.  
-✅ **Deep Learning Implementation:** Built **Policy and Value Neural Networks** using **PyTorch** for decision-making and move evaluation.  
-✅ **Reinforcement Learning Framework:** Implemented **self-play training** where the AI improves by continuously playing against itself.  
-✅ **Monte Carlo Tree Search (MCTS):** Used MCTS for probabilistic decision-making, allowing more efficient move selection in Go.  
-✅ **Scalability & Modular Design:** The system was designed to be **easily extensible** for additional games and optimizations.  
-✅ **Comprehensive Unit Testing:** Developed **test-driven AI development**, ensuring high code quality and robust performance validation.  
+  - **Multi-Level AI Training:** The AI evolved from **Tic-Tac-Toe** to **Othello** and then to **Go**, testing each algorithm's efficiency.
+  - **Deep Learning Implementation:** Built **Policy and Value Neural Networks** using **PyTorch** for decision-making and move evaluation.  
+  - **Reinforcement Learning Framework:** Implemented **self-play training** where the AI improves by continuously playing against itself.  
+  - **Monte Carlo Tree Search (MCTS):** Used MCTS for probabilistic decision-making, allowing more efficient move selection in Go.  
+  - **Scalability & Modular Design:** The system was designed to be **easily extensible** for additional games and optimizations.  
+  - **Comprehensive Unit Testing:** Developed **test-driven AI development**, ensuring high code quality and robust performance validation.  
 
 ---
 
